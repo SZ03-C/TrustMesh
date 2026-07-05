@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh Cyber Trust Passport</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">TrustMesh / Cyber Trust Passport</p>
+          <h1>Decide if an organization is safe enough to connect with.</h1>
+          <p class="intro">
+            Generate a living security passport for vendors, partners, and customer-facing organizations.
+          </p>
+          <form class="scan-form" id="scanForm">
+            <label for="domainInput">Organization domain</label>
+            <div class="input-row">
+              <input id="domainInput" name="domain" type="text" placeholder="example.com" autocomplete="off" required>
+              <button type="submit">Run passport</button>
+            </div>
+            <p class="microcopy">Prototype mode: scan results are simulated for product validation.</p>
+          </form>
+        </div>
+
+        <aside class="signal-panel" aria-label="TrustMesh signal preview">
+          <div class="panel-top">
+            <span class="status-dot"></span>
+            <span>Live trust fabric</span>
+          </div>
+          <div class="radar">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="signal-grid">
+            <div>
+              <strong>Domain</strong>
+              <span>verified</span>
+            </div>
+            <div>
+              <strong>Email</strong>
+              <span>spoof risk</span>
+            </div>
+            <div>
+              <strong>Exposure</strong>
+              <span>mapped</span>
+            </div>
+            <div>
+              <strong>GitHub</strong>
+              <span>reviewed</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="scan-stage" id="scanStage" aria-live="polite">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span></span>
+            <span></span>
+            <span></span>
+            <strong>passport-runner</strong>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <p>waiting for domain input...</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="passport hidden" id="passport">
+        <header class="passport-header">
+          <div>
+            <p class="eyebrow">Cyber Trust Passport</p>
+            <h2 id="passportDomain">example.com</h2>
+            <p id="passportDecision">Collaborate with restrictions</p>
+          </div>
+          <div class="score-ring" id="scoreRing" style="--score-deg:0deg">
+            <div class="score-ring-inner">
+              <span id="scoreValue">76</span>
+              <small>trust score</small>
+            </div>
+          </div>
+        </header>
+
+        <div class="metrics">
+          <article>
+            <span>Domain Trust</span>
+            <strong id="domainScore">84</strong>
+          </article>
+          <article>
+            <span>Email Trust</span>
+            <strong id="emailScore">68</strong>
+          </article>
+          <article>
+            <span>Public Exposure</span>
+            <strong id="exposureScore">71</strong>
+          </article>
+          <article>
+            <span>Developer Trust</span>
+            <strong id="developerScore">79</strong>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <section class="risk-board">
+            <div class="section-heading">
+              <h3>Top Risks</h3>
+              <span>ranked by collaboration impact</span>
+            </div>
+            <div id="riskList" class="risk-list"></div>
+          </section>
+
+          <section class="decision-card">
+            <div class="section-heading">
+              <h3>Sharing Decision</h3>
+              <span>business-readable verdict</span>
+            </div>
+            <div class="decision-status" id="decisionStatus">Restricted</div>
+            <p id="decisionText">
+              Safe for low-risk collaboration. Avoid sharing production credentials or sensitive customer data until high-priority fixes are complete.
+            </p>
+            <button type="button" id="copyLink">Copy passport link</button>
+            <button type="button" id="scanAnother" class="secondary-btn">Scan another domain</button>
+          </section>
+        </div>
+
+        <section class="timeline">
+          <div class="section-heading">
+            <h3>Evidence Timeline</h3>
+            <span>simulated scanner modules</span>
+          </div>
+          <div id="timelineList" class="timeline-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
