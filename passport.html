@@ -1,0 +1,66 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh Passport</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a class="active" href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+        </div>
+      </nav>
+
+      <section class="page-hero">
+        <p class="eyebrow">Shareable trust profile</p>
+        <h1>Cyber Trust Passport preview.</h1>
+        <p class="intro">This page represents what another organization would see after access is approved. It is still demo data, but the format is our real product direction.</p>
+      </section>
+
+      <section class="passport static-passport" id="passport">
+        <header class="passport-header">
+          <div>
+            <p class="eyebrow">Cyber Trust Passport</p>
+            <h2>acme-example.com</h2>
+            <p>Collaborate with restrictions</p>
+            <div class="passport-tags"><span>verified domain owner</span><span>summary access</span><span>last checked today</span></div>
+          </div>
+          <div class="score-ring" style="--score-deg:273deg"><div class="score-ring-inner"><span>76</span><small>trust score</small></div></div>
+        </header>
+
+        <div class="metrics">
+          <article><span>Domain Trust</span><strong>84</strong><small>identity verified</small></article>
+          <article><span>Email Trust</span><strong>68</strong><small>DMARC needs enforcement</small></article>
+          <article><span>Public Exposure</span><strong>71</strong><small>passive signals</small></article>
+          <article><span>Developer Trust</span><strong>79</strong><small>repo hygiene review</small></article>
+        </div>
+
+        <div class="content-grid">
+          <section class="risk-board">
+            <div class="section-heading"><h3>Passport Evidence</h3><span>summary view</span></div>
+            <div class="risk-list">
+              <article class="risk-item"><span class="risk-color" style="background:var(--amber)"></span><div><div class="risk-title-row"><strong>Email spoofing resistance is partial</strong><small>High</small></div><span>SPF exists, but DMARC enforcement should move from monitoring toward quarantine or reject.</span></div></article>
+              <article class="risk-item"><span class="risk-color" style="background:var(--cyan)"></span><div><div class="risk-title-row"><strong>Security headers need hardening</strong><small>Medium</small></div><span>Some browser protections are missing or not strict enough for sensitive data-sharing relationships.</span></div></article>
+              <article class="risk-item"><span class="risk-color" style="background:var(--green)"></span><div><div class="risk-title-row"><strong>HTTPS and certificate posture are healthy</strong><small>Good</small></div><span>The organization presents a valid TLS certificate and reachable HTTPS endpoint.</span></div></article>
+            </div>
+          </section>
+
+          <section class="decision-card">
+            <div class="section-heading"><h3>Allowed Collaboration</h3><span>policy output</span></div>
+            <div class="decision-status restricted">Restricted</div>
+            <p>Approve low-risk collaboration. Block production credentials, regulated customer data, and privileged integrations until high-priority findings are resolved.</p>
+            <div class="policy-list"><div><span></span>Share marketing or test data only</div><div><span></span>Require remediation proof</div><div><span></span>Recheck before API integration</div></div>
+            <a class="button-link" href="scanner.html">Generate another passport</a>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

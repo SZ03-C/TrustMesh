@@ -1,0 +1,3 @@
+server/node_modules/
+server/trustmesh.db
+server/server-test.log

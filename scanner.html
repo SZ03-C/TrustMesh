@@ -1,0 +1,81 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a class="active" href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+        </div>
+      </nav>
+
+      <section class="page-hero">
+        <p class="eyebrow">Passport generator</p>
+        <h1>Generate a Cyber Trust Passport.</h1>
+        <p class="intro">Enter an organization domain and TrustMesh will build a simulated passport. Next, we connect this flow to PostgreSQL and real passive checks.</p>
+      </section>
+
+      <section class="scan-stage" id="scanner" aria-live="polite">
+        <div class="terminal">
+          <div class="terminal-bar"><span></span><span></span><span></span><strong>passport-runner</strong></div>
+          <div class="scanner-shell">
+            <form class="scan-form scanner-form" id="scanForm">
+              <label for="domainInput">Organization domain</label>
+              <div class="input-row">
+                <input id="domainInput" name="domain" type="text" placeholder="example.com" autocomplete="off" required>
+                <button type="submit">Run passport</button>
+              </div>
+              <p class="microcopy">Prototype mode: scan results are simulated for product validation.</p>
+            </form>
+            <div class="terminal-layout">
+              <div class="terminal-body" id="terminalBody"><p>waiting for domain input...</p></div>
+              <div class="module-stack" id="moduleStack">
+                <div data-module="Domain">Domain<span>idle</span></div>
+                <div data-module="Email">Email<span>idle</span></div>
+                <div data-module="Exposure">Exposure<span>idle</span></div>
+                <div data-module="Developer">Developer<span>idle</span></div>
+                <div data-module="Decision">Decision<span>idle</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="passport hidden" id="passport">
+        <header class="passport-header">
+          <div>
+            <p class="eyebrow">Cyber Trust Passport</p>
+            <h2 id="passportDomain">example.com</h2>
+            <p id="passportDecision">Collaborate with restrictions</p>
+            <div class="passport-tags" id="passportTags"></div>
+          </div>
+          <div class="score-ring" id="scoreRing" style="--score-deg:0deg"><div class="score-ring-inner"><span id="scoreValue">76</span><small>trust score</small></div></div>
+        </header>
+        <div class="metrics">
+          <article><span>Domain Trust</span><strong id="domainScore">84</strong><small>identity verified</small></article>
+          <article><span>Email Trust</span><strong id="emailScore">68</strong><small>spoofing review</small></article>
+          <article><span>Public Exposure</span><strong id="exposureScore">71</strong><small>passive signals</small></article>
+          <article><span>Developer Trust</span><strong id="developerScore">79</strong><small>repo hygiene</small></article>
+        </div>
+        <div class="content-grid">
+          <section class="risk-board"><div class="section-heading"><h3>Top Risks</h3><span>ranked by collaboration impact</span></div><div id="riskList" class="risk-list"></div></section>
+          <section class="decision-card"><div class="section-heading"><h3>Sharing Decision</h3><span>business-readable verdict</span></div><div class="decision-status" id="decisionStatus">Restricted</div><p id="decisionText"></p><div class="policy-list" id="policyList"></div><button type="button" id="copyLink">Copy passport link</button><button type="button" id="scanAnother" class="secondary-btn">Scan another domain</button></section>
+        </div>
+        <div class="deep-grid">
+          <section class="timeline"><div class="section-heading"><h3>Evidence Timeline</h3><span>simulated scanner modules</span></div><div id="timelineList" class="timeline-list"></div></section>
+          <section class="remediation"><div class="section-heading"><h3>Remediation Queue</h3><span>next best actions</span></div><div id="remediationList" class="remediation-list"></div></section>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
