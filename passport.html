@@ -21,43 +21,40 @@
       <section class="page-hero">
         <p class="eyebrow">Shareable trust profile</p>
         <h1>Cyber Trust Passport preview.</h1>
-        <p class="intro">This page represents what another organization would see after access is approved. It is still demo data, but the format is our real product direction.</p>
+        <p class="intro">This page shows what a passport looks like after a scan is complete. Run a scan on the <a href="scanner.html" style="color:var(--green);text-decoration:underline">Scanner page</a> to generate one for a real domain.</p>
       </section>
 
       <section class="passport static-passport" id="passport">
         <header class="passport-header">
           <div>
             <p class="eyebrow">Cyber Trust Passport</p>
-            <h2>acme-example.com</h2>
-            <p>Collaborate with restrictions</p>
-            <div class="passport-tags"><span>verified domain owner</span><span>summary access</span><span>last checked today</span></div>
+            <h2>yourdomain.com</h2>
+            <p>Scan a domain to see its trust decision</p>
+            <div class="passport-tags"><span>no scan yet</span><span>run scanner first</span></div>
           </div>
-          <div class="score-ring" style="--score-deg:273deg"><div class="score-ring-inner"><span>76</span><small>trust score</small></div></div>
+          <div class="score-ring" style="--score-deg:0deg"><div class="score-ring-inner"><span>--</span><small>trust score</small></div></div>
         </header>
 
         <div class="metrics">
-          <article><span>Domain Trust</span><strong>84</strong><small>identity verified</small></article>
-          <article><span>Email Trust</span><strong>68</strong><small>DMARC needs enforcement</small></article>
-          <article><span>Public Exposure</span><strong>71</strong><small>passive signals</small></article>
-          <article><span>Developer Trust</span><strong>79</strong><small>repo hygiene review</small></article>
+          <article><span>Domain Trust</span><strong>--</strong><small>scan to load</small></article>
+          <article><span>Email Trust</span><strong>--</strong><small>scan to load</small></article>
+          <article><span>Public Exposure</span><strong>--</strong><small>scan to load</small></article>
+          <article><span>Developer Trust</span><strong>--</strong><small>scan to load</small></article>
         </div>
 
         <div class="content-grid">
           <section class="risk-board">
             <div class="section-heading"><h3>Passport Evidence</h3><span>summary view</span></div>
             <div class="risk-list">
-              <article class="risk-item"><span class="risk-color" style="background:var(--amber)"></span><div><div class="risk-title-row"><strong>Email spoofing resistance is partial</strong><small>High</small></div><span>SPF exists, but DMARC enforcement should move from monitoring toward quarantine or reject.</span></div></article>
-              <article class="risk-item"><span class="risk-color" style="background:var(--cyan)"></span><div><div class="risk-title-row"><strong>Security headers need hardening</strong><small>Medium</small></div><span>Some browser protections are missing or not strict enough for sensitive data-sharing relationships.</span></div></article>
-              <article class="risk-item"><span class="risk-color" style="background:var(--green)"></span><div><div class="risk-title-row"><strong>HTTPS and certificate posture are healthy</strong><small>Good</small></div><span>The organization presents a valid TLS certificate and reachable HTTPS endpoint.</span></div></article>
+              <article class="risk-item"><span class="risk-color" style="background:var(--muted)"></span><div><div class="risk-title-row"><strong>No scan data yet</strong><small>--</small></div><span>Go to the Scanner page and enter a domain to generate a passport.</span></div></article>
             </div>
           </section>
 
           <section class="decision-card">
             <div class="section-heading"><h3>Allowed Collaboration</h3><span>policy output</span></div>
-            <div class="decision-status restricted">Restricted</div>
-            <p>Approve low-risk collaboration. Block production credentials, regulated customer data, and privileged integrations until high-priority findings are resolved.</p>
-            <div class="policy-list"><div><span></span>Share marketing or test data only</div><div><span></span>Require remediation proof</div><div><span></span>Recheck before API integration</div></div>
-            <a class="button-link" href="scanner.html">Generate another passport</a>
+            <div class="decision-status" style="border-color:var(--muted);color:var(--muted)">Pending</div>
+            <p>Run a scan first to see the collaboration decision for a domain.</p>
+            <a class="button-link" href="scanner.html">Generate a passport</a>
           </section>
         </div>
       </section>

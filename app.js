@@ -1,6 +1,4 @@
-﻿const API = "/api/scans";
-
-const form = document.querySelector("#scanForm");
+﻿const form = document.querySelector("#scanForm");
 const domainInput = document.querySelector("#domainInput");
 const terminalBody = document.querySelector("#terminalBody");
 const passport = document.querySelector("#passport");
@@ -23,13 +21,83 @@ const moduleStack = document.querySelector("#moduleStack");
 const scoreRing = document.querySelector("#scoreRing");
 const scanAnother = document.querySelector("#scanAnother");
 
+const scanSteps = [
+  ["Domain", "verifying domain identity and HTTPS posture..."],
+  ["Email", "checking SPF, DKIM, DMARC, and spoofing exposure..."],
+  ["Exposure", "mapping passive public exposure signals..."],
+  ["Developer", "reviewing developer trust indicators..."],
+  ["Decision", "building collaboration decision and passport evidence..."]
+];
+
+const modules = [
+  ["Domain", "HTTPS reachable, certificate valid, security headers partially configured"],
+  ["Email", "SPF present, DMARC policy should move toward enforcement"],
+  ["Exposure", "No critical admin panel found in simulated passive review"],
+  ["Developer", "Security policy and workflow permissions need review"],
+  ["Decision", "Restricted collaboration recommended until priority fixes close"]
+];
+
+const riskTemplates = [
+  { title: "DMARC policy is not strict enough", body: "Attackers may spoof this domain in phishing campaigns. Move toward quarantine or reject after testing.", severity: "High", color: "var(--amber)" },
+  { title: "Security headers are incomplete", body: "Missing browser-side protections can increase exposure to clickjacking, content injection, or downgrade issues.", severity: "Medium", color: "var(--cyan)" },
+  { title: "Developer trust evidence is limited", body: "Missing SECURITY.md or weak repository governance makes responsible disclosure harder.", severity: "Medium", color: "var(--cyan)" },
+  { title: "Collaboration should be restricted", body: "Share low-risk information first. Avoid production credentials until evidence improves.", severity: "Policy", color: "var(--red)" },
+  { title: "Continuous monitoring is not enabled", body: "Trust can change after onboarding. Recheck this passport before major data-sharing decisions.", severity: "Low", color: "var(--green)" }
+];
+
+const remediationTemplates = [
+  ["01", "Publish a DMARC enforcement roadmap", "Email owners", "High"],
+  ["02", "Add missing security headers", "Web platform", "Medium"],
+  ["03", "Create SECURITY.md and disclosure contact", "Engineering", "Medium"],
+  ["04", "Review GitHub Actions workflow permissions", "DevOps", "Medium"]
+];
+
 function sanitizeDomain(value) {
   return value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 }
 
+function scoreFromDomain(domain) {
+  const seed = Array.from(domain).reduce((total, char) => total + char.charCodeAt(0), 0);
+  return {
+    total: 62 + (seed % 26),
+    domain: 70 + (seed % 22),
+    email: 56 + (seed % 31),
+    exposure: 64 + (seed % 25),
+    developer: 58 + (seed % 33)
+  };
+}
+
+function decisionForScore(score) {
+  if (score >= 82) {
+    return {
+      label: "Safe to collaborate",
+      status: "Verified",
+      statusClass: "verified",
+      text: "This organization is suitable for normal collaboration. Review detailed evidence before sharing highly sensitive data.",
+      policies: ["Approve standard SaaS access", "Require evidence for regulated data", "Monitor every 30 days"]
+    };
+  }
+  if (score >= 68) {
+    return {
+      label: "Collaborate with restrictions",
+      status: "Restricted",
+      statusClass: "restricted",
+      text: "Safe for low-risk collaboration. Avoid sharing production credentials or sensitive customer data until high-priority fixes are complete.",
+      policies: ["Share only low-risk data", "Block production secrets", "Request remediation proof"]
+    };
+  }
+  return {
+    label: "Do not share sensitive data yet",
+    status: "High Risk",
+    statusClass: "high-risk",
+    text: "This organization needs remediation before sensitive data, privileged access, or production integrations should be approved.",
+    policies: ["Deny privileged access", "Require owner verification", "Recheck after fixes"]
+  };
+}
+
 function writeTerminal(lines) {
   if (!terminalBody) return;
-  terminalBody.innerHTML = lines.map((l) => `<p>${l}</p>`).join("");
+  terminalBody.innerHTML = lines.map((line) => `<p>${line}</p>`).join("");
 }
 
 function setModuleState(name, state) {
@@ -48,68 +116,44 @@ function resetModules() {
   });
 }
 
-function renderPassport(domain, data) {
-  const s = data.scores;
-  const d = data.decision;
+function renderPassport(domain) {
+  const scores = scoreFromDomain(domain);
+  const decision = decisionForScore(scores.total);
 
   passportDomain.textContent = domain;
-  passportDecision.textContent = d.label;
-  scoreValue.textContent = s.total;
+  passportDecision.textContent = decision.label;
+  scoreValue.textContent = scores.total;
+  domainScore.textContent = scores.domain;
+  emailScore.textContent = scores.email;
+  exposureScore.textContent = scores.exposure;
+  developerScore.textContent = scores.developer;
+  decisionStatus.textContent = decision.status;
+  decisionStatus.className = `decision-status ${decision.statusClass}`;
+  decisionText.textContent = decision.text;
 
-  domainScore.textContent = s.domain;
-  emailScore.textContent = s.email;
-  exposureScore.textContent = s.exposure;
-  developerScore.textContent = s.developer;
+  passportTags.innerHTML = ["generated passport", "passive scan", "prototype evidence"].map((t) => `<span>${t}</span>`).join("");
+  policyList.innerHTML = decision.policies.map((p) => `<div><span></span>${p}</div>`).join("");
 
-  decisionStatus.textContent = d.status;
-  decisionStatus.className = "decision-status " + (d.statusClass || "");
-  decisionText.textContent = d.text || "Review findings below.";
+  riskList.innerHTML = riskTemplates.map((r) => `
+    <article class="risk-item">
+      <span class="risk-color" style="background:${r.color}"></span>
+      <div>
+        <div class="risk-title-row"><strong>${r.title}</strong><small>${r.severity}</small></div>
+        <span>${r.body}</span>
+      </div>
+    </article>
+  `).join("");
 
-  passportTags.innerHTML = ["live scan", "passive checks", "real evidence"].map((t) => `<span>${t}</span>`).join("");
-  policyList.innerHTML = (d.policies || ["Review findings before sharing data"]).map((p) => `<div><span></span>${p}</div>`).join("");
-
-  const severityColor = (sev) => {
-    if (sev === "high" || sev === "critical") return "var(--red)";
-    if (sev === "medium") return "var(--amber)";
-    return "var(--cyan)";
-  };
-
-  riskList.innerHTML = data.findings
-    .filter((f) => f.severity !== "info")
-    .slice(0, 6)
-    .map((f) => `
-      <article class="risk-item">
-        <span class="risk-color" style="background:${severityColor(f.severity)}"></span>
-        <div>
-          <div class="risk-title-row"><strong>${f.title}</strong><small>${f.severity}</small></div>
-          <span>${f.description}</span>
-        </div>
-      </article>
-    `).join("") || "<p style='color:var(--muted)'>No significant risks identified.</p>";
-
-  timelineList.innerHTML = data.findings
-    .slice(0, 6)
-    .map((f) => `<div><strong>${f.category}</strong><span>${f.title}</span></div>`)
-    .join("");
-
-  const remediationItems = data.findings.filter((f) => f.severity !== "info").slice(0, 4);
-  remediationList.innerHTML = remediationItems.length
-    ? remediationItems.map((f, i) => `
-      <article>
-        <strong>${String(i + 1).padStart(2, "0")}</strong>
-        <div>
-          <span>${f.title}</span>
-          <small>${f.category} / ${f.severity}</small>
-        </div>
-      </article>
-    `).join("")
-    : "<p style='color:var(--muted)'>No remediation needed.</p>";
+  timelineList.innerHTML = modules.map(([name, evidence]) => `<div><strong>${name}</strong><span>${evidence}</span></div>`).join("");
+  remediationList.innerHTML = remediationTemplates.map(([num, title, owner, priority]) => `
+    <article><strong>${num}</strong><div><span>${title}</span><small>${owner} / ${priority}</small></div></article>
+  `).join("");
 
   passport.classList.remove("hidden");
   passport.scrollIntoView({ behavior: "smooth", block: "start" });
 
   requestAnimationFrame(() => {
-    scoreRing.style.setProperty("--score-deg", `${(s.total / 100) * 360}deg`);
+    scoreRing.style.setProperty("--score-deg", `${(scores.total / 100) * 360}deg`);
   });
 }
 
@@ -118,47 +162,20 @@ async function runScan(domain) {
   scoreRing.style.setProperty("--score-deg", "0deg");
   resetModules();
 
-  const lines = [`target: ${domain}`, "mode: live scan", "connecting to scanner service..."];
+  const lines = [`target: ${domain}`, "mode: prototype simulation", "scan type: passive trust review"];
   writeTerminal(lines);
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
-
-    const res = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ domain }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Server returned ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    for (const log of data.logs) {
-      setModuleState(log.module, "running");
-      await new Promise((r) => setTimeout(r, 300));
-      setModuleState(log.module, "complete");
-      lines.push(`ok: ${log.message}`);
-      writeTerminal(lines);
-    }
-
-    lines.push(`passport generated for ${domain}`);
+  for (const [moduleName, step] of scanSteps) {
+    setModuleState(moduleName, "running");
+    await new Promise((resolve) => setTimeout(resolve, 430));
+    setModuleState(moduleName, "complete");
+    lines.push(`ok: ${step}`);
     writeTerminal(lines);
-    renderPassport(domain, data);
-  } catch (err) {
-    if (err.name === "AbortError") {
-      writeTerminal(["error: scan timed out. Is the server running?"]);
-    } else {
-      writeTerminal([`error: ${err.message}`]);
-    }
-    resetModules();
   }
+
+  lines.push("passport generated.");
+  writeTerminal(lines);
+  renderPassport(domain);
 }
 
 if (form) {
@@ -166,7 +183,7 @@ if (form) {
     e.preventDefault();
     const domain = sanitizeDomain(domainInput.value);
     if (!domain || !domain.includes(".")) {
-      writeTerminal(["error: enter a valid domain, e.g. example.com"]);
+      writeTerminal(["error: enter a valid organization domain, for example trustmesh.io"]);
       return;
     }
     runScan(domain);
