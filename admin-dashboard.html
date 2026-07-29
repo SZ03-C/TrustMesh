@@ -54,6 +54,24 @@
       .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
       .empty-state h3 { color: var(--text); margin-bottom: 6px; }
 
+      .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+      .tab { padding: 10px 20px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; border-radius: 8px 8px 0 0; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+      .tab:hover { border-color: rgba(57,255,136,0.2); color: var(--text); }
+      .tab.active { background: rgba(11,16,22,0.8); border-color: var(--line); border-bottom-color: rgba(11,16,22,0.8); color: var(--green); }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; border: 1px solid var(--line); border-radius: 0 8px 8px 8px; background: rgba(11,16,22,0.8); padding: 20px; }
+
+      .table-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+      .table-nav button { padding: 6px 14px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; border-radius: 6px; font-size: 0.78rem; transition: all 0.2s; }
+      .table-nav button:hover { border-color: rgba(57,255,136,0.2); color: var(--text); }
+      .table-nav button.active { background: rgba(57,255,136,0.08); border-color: rgba(57,255,136,0.25); color: var(--green); }
+
+      .db-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+      .db-table th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+      .db-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #b8d8c8; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .db-table tr:hover td { background: rgba(57,255,136,0.03); }
+      .db-table .row-count { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
+
       @media (max-width: 600px) { .admin-stats { grid-template-columns: repeat(2, 1fr); } }
     </style>
   </head>
@@ -75,7 +93,7 @@
       <div class="admin-header">
         <div>
           <p class="eyebrow">Admin panel</p>
-          <h1>Trust Request Management</h1>
+          <h1>Administration</h1>
         </div>
         <div style="display:flex;gap:10px">
           <a class="button-link secondary-link" href="index.html" style="text-decoration:none">Dashboard</a>
@@ -83,14 +101,25 @@
         </div>
       </div>
 
-      <div class="admin-stats">
-        <div class="admin-stat stat-pending"><strong id="sPending">0</strong><span>Pending</span></div>
-        <div class="admin-stat stat-approved"><strong id="sApproved">0</strong><span>Approved</span></div>
-        <div class="admin-stat stat-denied"><strong id="sDenied">0</strong><span>Denied</span></div>
-        <div class="admin-stat stat-total"><strong id="sTotal">0</strong><span>Total</span></div>
+      <div class="tabs">
+        <button class="tab active" data-tab="requests">Trust Requests</button>
+        <button class="tab" data-tab="db">Database</button>
       </div>
 
-      <div id="requestsList"></div>
+      <div class="tab-content active" id="tab-requests">
+        <div class="admin-stats">
+          <div class="admin-stat stat-pending"><strong id="sPending">0</strong><span>Pending</span></div>
+          <div class="admin-stat stat-approved"><strong id="sApproved">0</strong><span>Approved</span></div>
+          <div class="admin-stat stat-denied"><strong id="sDenied">0</strong><span>Denied</span></div>
+          <div class="admin-stat stat-total"><strong id="sTotal">0</strong><span>Total</span></div>
+        </div>
+        <div id="requestsList"></div>
+      </div>
+
+      <div class="tab-content" id="tab-db">
+        <div class="table-nav" id="tableNav"></div>
+        <div id="dbContent"><div class="empty-state"><h3>Loading database...</h3></div></div>
+      </div>
 
       <footer class="site-footer">
         <div class="footer-content">
@@ -123,6 +152,17 @@
         localStorage.removeItem("tm_token");
         localStorage.removeItem("tm_user");
         window.location.href = "admin.html";
+      });
+
+      // Tab switching
+      document.querySelectorAll(".tab").forEach(function(tab) {
+        tab.addEventListener("click", function() {
+          document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+          document.querySelectorAll(".tab-content").forEach(function(tc) { tc.classList.remove("active"); });
+          tab.classList.add("active");
+          document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+          if (tab.dataset.tab === "db") loadDB();
+        });
       });
 
       loadRequests();
@@ -226,6 +266,58 @@
           });
           loadRequests();
         } catch (err) {}
+      }
+
+      // Database viewer
+      var dbData = null;
+      var currentTable = null;
+
+      async function loadDB() {
+        try {
+          var resp = await fetch("/api/admin/db", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          var data = await resp.json();
+          dbData = data.db;
+          var tables = Object.keys(dbData);
+          var nav = document.getElementById("tableNav");
+          nav.innerHTML = tables.map(function(t) {
+            var active = t === (currentTable || tables[0]) ? ' active' : '';
+            return '<button class="' + active + '" data-table="' + t + '">' + t + ' (' + (dbData[t] ? dbData[t].length : 0) + ')</button>';
+          }).join("");
+          nav.querySelectorAll("button").forEach(function(btn) {
+            btn.addEventListener("click", function() {
+              nav.querySelectorAll("button").forEach(function(b) { b.classList.remove("active"); });
+              btn.classList.add("active");
+              currentTable = btn.dataset.table;
+              renderTable(currentTable);
+            });
+          });
+          if (!currentTable) currentTable = tables[0];
+          if (currentTable) renderTable(currentTable);
+        } catch (err) {
+          document.getElementById("dbContent").innerHTML = '<div class="empty-state"><h3>Could not load database</h3><p>Make sure the server is running.</p></div>';
+        }
+      }
+
+      function renderTable(name) {
+        var rows = dbData[name] || [];
+        var cols = rows.length > 0 ? Object.keys(rows[0]) : [];
+        var html = '<div class="row-count">' + rows.length + ' row' + (rows.length !== 1 ? "s" : "") + '</div>';
+        if (cols.length === 0) {
+          html += '<div class="empty-state"><h3>Empty table</h3></div>';
+        } else {
+          html += '<div style="overflow-x:auto"><table class="db-table"><thead><tr>' + cols.map(function(c) { return '<th>' + c + '</th>'; }).join("") + '</tr></thead><tbody>';
+          rows.forEach(function(r) {
+            html += '<tr>' + cols.map(function(c) {
+              var v = r[c];
+              var s = v === null || v === undefined ? '<span style="color:#4a5a52">NULL</span>' : esc(String(v));
+              return '<td title="' + esc(String(v || "")) + '">' + s + '</td>';
+            }).join("") + '</tr>';
+          });
+          html += '</tbody></table></div>';
+        }
+        document.getElementById("dbContent").innerHTML = html;
       }
     })();
     </script>

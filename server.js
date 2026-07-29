@@ -263,6 +263,24 @@ app.get("/api/admin/feedback", authenticate, requireAdmin, (req, res) => {
   }
 });
 
+// Admin: database viewer — returns all tables
+app.get("/api/admin/db", authenticate, requireAdmin, (req, res) => {
+  try {
+    const tables = ["users", "scan_runs", "scan_findings", "score_breakdowns", "trust_requests", "feedback"];
+    const db = {};
+    for (const t of tables) {
+      try {
+        db[t] = prepare(`SELECT * FROM ${t} ORDER BY rowid DESC LIMIT 50`).all();
+      } catch (e) {
+        db[t] = [];
+      }
+    }
+    res.json({ db });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to read database" });
+  }
+});
+
 // Catch-all
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
