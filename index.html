@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh - Cyber Trust Intelligence</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .hero-dash { padding: 60px 0 20px; }
+      .hero-dash .eyebrow { margin-bottom: 12px; }
+      .hero-dash h1 { font-size: clamp(2rem, 4.5vw, 3.4rem); line-height: 1.05; letter-spacing: -0.02em; max-width: 700px; }
+      .hero-dash h1 em { font-style: normal; color: var(--green); }
+      .hero-sub { color: var(--muted); font-size: 1.05rem; line-height: 1.7; max-width: 560px; margin: 0 0 32px; }
+
+      .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+      .metric-card { padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: rgba(11,16,22,0.8); position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+      .metric-card:hover { border-color: rgba(57,255,136,0.25); transform: translateY(-2px); }
+      .metric-card .mc-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 1.1rem; margin-bottom: 16px; }
+      .mc-green { background: rgba(57,255,136,0.1); color: var(--green); }
+      .mc-cyan { background: rgba(56,216,255,0.1); color: var(--cyan); }
+      .mc-amber { background: rgba(255,200,87,0.1); color: var(--amber); }
+      .mc-red { background: rgba(255,77,109,0.1); color: var(--red); }
+      .metric-card .mc-val { font-size: 2rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+      .metric-card .mc-label { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
+      .metric-card .mc-trend { position: absolute; top: 20px; right: 20px; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+      .trend-up { background: rgba(57,255,136,0.1); color: var(--green); }
+      .trend-down { background: rgba(255,77,109,0.1); color: var(--red); }
+      .trend-flat { background: rgba(255,200,87,0.1); color: var(--amber); }
+
+      .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 32px; }
+      .card { padding: 28px; border: 1px solid var(--line); border-radius: 12px; background: rgba(11,16,22,0.8); }
+      .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .card-head h3 { margin: 0; font-size: 1rem; }
+      .card-head .badge { font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+
+      .score-dist { display: flex; flex-direction: column; gap: 12px; }
+      .dist-row { display: flex; align-items: center; gap: 12px; }
+      .dist-label { width: 80px; font-size: 0.82rem; color: var(--muted); }
+      .dist-track { flex: 1; height: 8px; background: #141e28; border-radius: 4px; overflow: hidden; }
+      .dist-fill { height: 100%; border-radius: 4px; transition: width 1.2s ease; }
+      .dist-val { width: 32px; text-align: right; font-size: 0.82rem; font-weight: 700; font-family: "Cascadia Code", Consolas, monospace; }
+
+      .activity-list { display: flex; flex-direction: column; gap: 10px; }
+      .act-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid #1a2830; border-radius: 8px; transition: border-color 0.2s; }
+      .act-item:hover { border-color: rgba(57,255,136,0.15); }
+      .act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+      .act-info { flex: 1; min-width: 0; }
+      .act-info strong { display: block; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .act-info small { color: var(--muted); font-size: 0.78rem; }
+      .act-score { font-size: 0.85rem; font-weight: 800; font-family: "Cascadia Code", Consolas, monospace; }
+
+      .trust-bands { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 32px; }
+      .band-card { padding: 24px; border-radius: 12px; text-align: center; border: 1px solid var(--line); position: relative; overflow: hidden; transition: transform 0.3s; }
+      .band-card:hover { transform: translateY(-2px); }
+      .band-card::before { content: ""; position: absolute; inset: 0; opacity: 0.04; }
+      .band-safe { border-color: rgba(57,255,136,0.2); }
+      .band-safe::before { background: var(--green); }
+      .band-rest { border-color: rgba(255,200,87,0.2); }
+      .band-rest::before { background: var(--amber); }
+      .band-risk { border-color: rgba(255,77,109,0.2); }
+      .band-risk::before { background: var(--red); }
+      .band-card .band-range { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+      .band-card .band-label { font-size: 0.82rem; font-weight: 700; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+      .band-card .band-desc { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+      .band-safe .band-range { color: var(--green); }
+      .band-safe .band-label { color: var(--green); }
+      .band-rest .band-range { color: var(--amber); }
+      .band-rest .band-label { color: var(--amber); }
+      .band-risk .band-range { color: var(--red); }
+      .band-risk .band-label { color: var(--red); }
+
+      .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+      .feature-card { padding: 28px; border: 1px solid var(--line); border-radius: 12px; background: rgba(11,16,22,0.8); transition: border-color 0.3s, transform 0.3s; }
+      .feature-card:hover { border-color: rgba(57,255,136,0.2); transform: translateY(-3px); }
+      .feature-card .fc-icon { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem; margin-bottom: 16px; }
+      .feature-card h3 { font-size: 1rem; margin: 0 0 8px; }
+      .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin: 0; }
+      .feature-card .fc-link { display: inline-block; margin-top: 14px; font-size: 0.82rem; color: var(--green); font-weight: 600; }
+      .feature-card .fc-link:hover { text-decoration: underline; }
+      @media (max-width: 800px) { .features-grid { grid-template-columns: 1fr; } }
+      .cta-actions { display: flex; gap: 12px; justify-content: center; }
+
+      .live-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(11,16,22,0.6); margin-bottom: 24px; font-size: 0.82rem; color: var(--muted); }
+      .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+      @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+      @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      .anim { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+      .anim-d1 { animation-delay: 0.1s; }
+      .anim-d2 { animation-delay: 0.2s; }
+      .anim-d3 { animation-delay: 0.3s; }
+      .anim-d4 { animation-delay: 0.4s; }
+      .anim-d5 { animation-delay: 0.5s; }
+
+      @media (max-width: 800px) {
+        .metrics-row { grid-template-columns: repeat(2, 1fr); }
+        .content-grid { grid-template-columns: 1fr; }
+        .trust-bands { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 500px) {
+        .metrics-row { grid-template-columns: 1fr; }
+        .hero-dash h1 { font-size: 1.8rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a class="active" href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+          <span class="nav-user" id="navUser"></span>
+        </div>
+      </nav>
+
+      <section class="hero-dash">
+        <p class="eyebrow anim">TrustMesh / Intelligence Platform</p>
+        <h1 class="anim anim-d1">Quantify cyber trust<br>across every <em>partnership</em></h1>
+        <p class="hero-sub anim anim-d2">Real-time security posture scoring for organizations. Scan domains, generate verified trust passports, and manage access with full audit trails.</p>
+        <div class="cta-actions anim anim-d3">
+          <a class="button-link" href="scanner.html">Run a scan</a>
+          <a class="button-link secondary-link" href="passport.html">View passport</a>
+        </div>
+      </section>
+
+      <div class="live-bar anim anim-d3">
+        <span class="live-dot"></span>
+        <span>System operational</span>
+        <span style="margin-left:auto;color:#3a6a4a" id="liveTime"></span>
+      </div>
+
+      <div class="metrics-row anim anim-d4">
+        <div class="metric-card">
+          <div class="mc-icon mc-green">&#9881;</div>
+          <span class="mc-trend trend-flat" id="trendOrgs">0 total</span>
+          <div class="mc-val" id="mOrgs">0</div>
+          <div class="mc-label">Organizations scanned</div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-cyan">&#9989;</div>
+          <span class="mc-trend trend-up" id="trendSafe">0%</span>
+          <div class="mc-val" id="mSafe">0</div>
+          <div class="mc-label">Safe to collaborate</div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-amber">&#9888;</div>
+          <span class="mc-trend trend-flat" id="trendRestricted">0%</span>
+          <div class="mc-val" id="mRestricted">0</div>
+          <div class="mc-label">Restricted partners</div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-red">&#128269;</div>
+          <span class="mc-trend trend-down" id="trendFindings">0</span>
+          <div class="mc-val" id="mFindings">0</div>
+          <div class="mc-label">Security findings</div>
+        </div>
+      </div>
+
+      <div class="trust-bands anim anim-d5">
+        <div class="band-card band-safe">
+          <div class="band-range">82-100</div>
+          <div class="band-label">Safe</div>
+          <div class="band-desc">Full collaboration approved. Share data freely.</div>
+        </div>
+        <div class="band-card band-rest">
+          <div class="band-range">68-81</div>
+          <div class="band-label">Restricted</div>
+          <div class="band-desc">Limited sharing only. Remediation recommended.</div>
+        </div>
+        <div class="band-card band-risk">
+          <div class="band-range">0-67</div>
+          <div class="band-label">High Risk</div>
+          <div class="band-desc">No sensitive data. Immediate fixes required.</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-head">
+            <h3>Score distribution</h3>
+            <span class="badge" style="background:rgba(57,255,136,0.1);color:var(--green)">Live</span>
+          </div>
+          <div class="score-dist" id="scoreDist">
+            <div class="dist-row"><span class="dist-label">Safe (82+)</span><div class="dist-track"><div class="dist-fill" id="distSafe" style="width:0%;background:var(--green)"></div></div><span class="dist-val" id="distSafeVal">0</span></div>
+            <div class="dist-row"><span class="dist-label">Restricted</span><div class="dist-track"><div class="dist-fill" id="distRest" style="width:0%;background:var(--amber)"></div></div><span class="dist-val" id="distRestVal">0</span></div>
+            <div class="dist-row"><span class="dist-label">High risk</span><div class="dist-track"><div class="dist-fill" id="distRisk" style="width:0%;background:var(--red)"></div></div><span class="dist-val" id="distRiskVal">0</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>Recent scans</h3>
+            <a href="scanner.html" style="font-size:0.82rem;color:var(--green);font-weight:600">View all &rarr;</a>
+          </div>
+          <div class="activity-list" id="activityList">
+            <div style="text-align:center;padding:30px;color:var(--muted);font-size:0.88rem">No scans yet. <a href="scanner.html" style="color:var(--green)">Run your first scan</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="fc-icon mc-green">&#128269;</div>
+          <h3>Domain Intelligence</h3>
+          <p>Real-time HTTPS verification, security header analysis, DNS-over-HTTPS checks, and TLS certificate validation across any organization.</p>
+          <a class="fc-link" href="scanner.html">Run a scan &rarr;</a>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon mc-cyan">&#128220;</div>
+          <h3>Cyber Trust Passport</h3>
+          <p>Generate an international-standard trust credential with ID numbers, security badges, MRZ zone, QR code, and verified collaboration decision.</p>
+          <a class="fc-link" href="passport.html">View passport &rarr;</a>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon mc-amber">&#128274;</div>
+          <h3>Email Authentication</h3>
+          <p>Deep analysis of SPF, DKIM, and DMARC policies. Understand email spoofing risks and get actionable remediation steps.</p>
+          <a class="fc-link" href="scanner.html">Check email auth &rarr;</a>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon mc-red">&#128737;</div>
+          <h3>Exposure Mapping</h3>
+          <p>Passive attack surface analysis that identifies public exposure, information leakage, and exposed services without intrusive scanning.</p>
+          <a class="fc-link" href="scanner.html">Map exposure &rarr;</a>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon mc-green">&#128187;</div>
+          <h3>Developer Hygiene</h3>
+          <p>GitHub organization scanning for SECURITY.md, branch protection, exposed configs, and repository hygiene across public and private repos.</p>
+          <a class="fc-link" href="scanner.html">Scan GitHub &rarr;</a>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon mc-cyan">&#128227;</div>
+          <h3>Trust Requests</h3>
+          <p>Organizations request access at summary, full, or evidence level. You approve or deny from the admin panel with full audit trail.</p>
+          <a class="fc-link" href="requests.html">Manage requests &rarr;</a>
+        </div>
+      </div>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <div class="footer-links">
+            <a href="index.html">Dashboard</a>
+            <a href="scanner.html">Scanner</a>
+            <a href="contact.html">Contact</a>
+          </div>
+          <div class="footer-social">
+            <a href="https://github.com/SZ03-C" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://linkedin.com/in/shaguftha-zabeen" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="mailto:magic031827@gmail.com">Email</a>
+          </div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+          <p class="footer-legal">TrustMesh only performs safe, passive security checks.</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+    (function() {
+      var user = JSON.parse(localStorage.getItem("tm_user") || "null");
+      var navUser = document.getElementById("navUser");
+      if (user && navUser) {
+        navUser.textContent = user.name || user.email;
+        if (user.role === "admin") navUser.textContent += " (admin)";
+        navUser.style.cursor = "pointer";
+        navUser.addEventListener("click", function() {
+          localStorage.removeItem("tm_token");
+          localStorage.removeItem("tm_user");
+          window.location.reload();
+        });
+      }
+
+      document.getElementById("liveTime").textContent = new Date().toLocaleString();
+
+      fetch("/api/stats").then(function(r){return r.json()}).then(function(d){
+        var total = d.monitored || 0;
+        var safe = d.safe || 0;
+        var rest = d.restricted || 0;
+        var fixes = d.openFixes || 0;
+
+        animateNum("mOrgs", total);
+        animateNum("mSafe", safe);
+        animateNum("mRestricted", rest);
+        animateNum("mFindings", fixes);
+
+        var safePct = total > 0 ? Math.round(safe/total*100) : 0;
+        var restPct = total > 0 ? Math.round(rest/total*100) : 0;
+        document.getElementById("trendSafe").textContent = safePct + "%";
+        document.getElementById("trendRestricted").textContent = restPct + "%";
+        document.getElementById("trendOrgs").textContent = total + " total";
+        document.getElementById("trendFindings").textContent = fixes + " found";
+
+        document.getElementById("distSafe").style.width = safePct + "%";
+        document.getElementById("distRest").style.width = restPct + "%";
+        document.getElementById("distRisk").style.width = (100 - safePct - restPct) + "%";
+        document.getElementById("distSafeVal").textContent = safe;
+        document.getElementById("distRestVal").textContent = rest;
+        document.getElementById("distRiskVal").textContent = Math.max(0, total - safe - rest);
+      }).catch(function(){});
+
+      var lastScan = JSON.parse(localStorage.getItem("tm_lastScan") || "null");
+      if (lastScan && lastScan.scores) {
+        var list = document.getElementById("activityList");
+        var s = lastScan.scores;
+        var color = s.total >= 82 ? "var(--green)" : s.total >= 68 ? "var(--amber)" : "var(--red)";
+        list.innerHTML = '<div class="act-item"><div class="act-dot" style="background:'+color+'"></div><div class="act-info"><strong>'+lastScan.domain+'</strong><small>Last scan &middot; '+new Date().toLocaleDateString()+'</small></div><div class="act-score" style="color:'+color+'">'+s.total+'</div></div>';
+      }
+
+      function animateNum(id, target) {
+        var el = document.getElementById(id);
+        if (!el || target === 0) { if(el) el.textContent = "0"; return; }
+        var current = 0;
+        var step = Math.max(1, Math.floor(target / 30));
+        var interval = setInterval(function() {
+          current += step;
+          if (current >= target) { current = target; clearInterval(interval); }
+          el.textContent = current;
+        }, 30);
+      }
+    })();
+    </script>
+  </body>
+</html>

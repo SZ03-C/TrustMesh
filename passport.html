@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh - Cyber Trust Passport</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      body { background: #040b10; }
+      .passport-hero { text-align: center; padding: 24px 0 0; }
+      .passport-hero h1 { font-size: 1.5rem; }
+      .passport-hero .intro { max-width: 540px; }
+
+      .passport-doc-wrap { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 30px 0 50px; }
+
+      /* === FRONT COVER === */
+      .passport-cover {
+        width: 380px; min-height: 520px;
+        background: linear-gradient(160deg, #0b1a12 0%, #0a1510 40%, #061008 100%);
+        border: 2px solid #1a3a22;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(57,255,136,0.08);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+      }
+      .passport-cover::before {
+        content: ""; position: absolute; inset: 0;
+        background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(57,255,136,0.015) 20px, rgba(57,255,136,0.015) 21px);
+        pointer-events: none;
+      }
+      .passport-cover::after {
+        content: ""; position: absolute; inset: 0;
+        background: radial-gradient(ellipse at 30% 20%, rgba(57,255,136,0.06) 0%, transparent 60%);
+        pointer-events: none;
+      }
+      .cover-emblem { position: relative; z-index: 1; text-align: center; }
+      .cover-emblem .emblem-ring {
+        width: 100px; height: 100px; border: 3px solid #2a7a3e; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px; position: relative;
+        box-shadow: 0 0 30px rgba(57,255,136,0.12);
+      }
+      .cover-emblem .emblem-ring::before {
+        content: ""; position: absolute; inset: 4px; border: 1px solid rgba(57,255,136,0.25); border-radius: 50%;
+      }
+      .cover-emblem .emblem-ring .tm-logo { font-size: 2rem; font-weight: 900; color: var(--green); letter-spacing: -1px; }
+      .cover-emblem .cover-title {
+        font-size: 1.6rem; font-weight: 900; color: #d4e8da; letter-spacing: 4px; text-transform: uppercase;
+        text-shadow: 0 0 20px rgba(57,255,136,0.15);
+      }
+      .cover-emblem .cover-subtitle {
+        font-size: 0.72rem; color: #5a8a6a; letter-spacing: 6px; text-transform: uppercase; margin-top: 6px;
+      }
+      .cover-emblem .cover-org {
+        font-size: 0.82rem; color: #3d7a52; margin-top: 30px; font-weight: 700;
+        letter-spacing: 2px; text-transform: uppercase;
+      }
+      .cover-emblem .cover-id {
+        font-size: 0.7rem; color: #2a5a3a; margin-top: 8px; font-family: 'Courier New', monospace; letter-spacing: 3px;
+      }
+      .cover-hologram {
+        position: absolute; bottom: 20px; right: 20px; width: 50px; height: 50px; z-index: 1;
+        border: 1px solid rgba(57,255,136,0.2); border-radius: 50%;
+        background: conic-gradient(from 0deg, rgba(57,255,136,0.05), rgba(0,200,100,0.1), rgba(57,255,136,0.05), rgba(0,200,100,0.1), rgba(57,255,136,0.05));
+        animation: holoSpin 8s linear infinite;
+      }
+      @keyframes holoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      .cover-seal {
+        position: absolute; bottom: 18px; left: 20px; z-index: 1;
+        font-size: 0.55rem; color: #2a5a3a; text-transform: uppercase; letter-spacing: 2px;
+      }
+
+      /* === DATA PAGE === */
+      .passport-page {
+        width: 480px; min-height: 520px;
+        background: linear-gradient(180deg, #0c1610 0%, #0a1210 100%);
+        border: 2px solid #1a3a22;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(57,255,136,0.08);
+        position: relative; overflow: hidden;
+        padding: 0;
+      }
+      .passport-page::before {
+        content: ""; position: absolute; inset: 0;
+        background: repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(57,255,136,0.02) 38px, rgba(57,255,136,0.02) 39px);
+        pointer-events: none;
+      }
+
+      .page-header {
+        background: linear-gradient(90deg, #12221a, #1a3328, #12221a);
+        padding: 14px 24px; border-bottom: 1px solid #1a3a22;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .page-header .ph-title { font-size: 0.7rem; color: #5a9a6a; letter-spacing: 4px; text-transform: uppercase; font-weight: 800; }
+      .page-header .ph-type { font-size: 0.6rem; color: #3a6a4a; letter-spacing: 2px; text-transform: uppercase; }
+
+      .page-body { padding: 20px 24px; position: relative; z-index: 1; }
+
+      .page-top-row { display: flex; gap: 18px; margin-bottom: 18px; }
+
+      .org-photo {
+        width: 80px; height: 100px; border: 2px solid #2a5a3a; border-radius: 4px;
+        background: #0a1510; display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; position: relative; overflow: hidden;
+      }
+      .org-photo::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(57,255,136,0.05) 0%, transparent 50%);
+      }
+      .org-photo .photo-icon { font-size: 2rem; color: #2a5a3a; }
+
+      .org-details { flex: 1; }
+      .org-details .detail-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(26,58,34,0.5); }
+      .org-details .detail-label { font-size: 0.6rem; color: #4a7a5a; text-transform: uppercase; letter-spacing: 1px; }
+      .org-details .detail-value { font-size: 0.78rem; color: #b8d8c8; font-weight: 600; font-family: 'Courier New', monospace; }
+
+      .trust-score-section {
+        text-align: center; padding: 16px 0; margin: 14px 0;
+        border-top: 1px solid #1a3a22; border-bottom: 1px solid #1a3a22;
+        position: relative;
+      }
+      .trust-score-section .tss-label { font-size: 0.6rem; color: #4a7a5a; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px; }
+      .trust-score-big {
+        font-size: 3.5rem; font-weight: 900; color: var(--green);
+        text-shadow: 0 0 30px rgba(57,255,136,0.3);
+        line-height: 1;
+      }
+      .trust-score-section .tss-decision { font-size: 0.75rem; color: #6aaa7a; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
+      .trust-score-section .tss-max { font-size: 0.65rem; color: #3a6a4a; }
+
+      .security-badges {
+        display: flex; gap: 10px; margin: 14px 0;
+      }
+      .sec-badge {
+        flex: 1; text-align: center; padding: 10px 6px;
+        border: 1px solid #1a3a22; border-radius: 6px;
+        background: rgba(57,255,136,0.02);
+      }
+      .sec-badge .badge-icon { font-size: 1.1rem; margin-bottom: 4px; }
+      .sec-badge .badge-label { font-size: 0.55rem; color: #4a7a5a; text-transform: uppercase; letter-spacing: 1px; }
+      .sec-badge .badge-status { font-size: 0.65rem; font-weight: 700; margin-top: 2px; }
+      .badge-pass { color: var(--green); }
+      .badge-warn { color: #e6a817; }
+      .badge-fail { color: var(--red); }
+
+      .score-bars { margin: 14px 0; }
+      .score-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+      .score-bar-label { font-size: 0.6rem; color: #5a8a6a; width: 80px; text-transform: uppercase; letter-spacing: 1px; }
+      .score-bar-track { flex: 1; height: 6px; background: #12221a; border-radius: 3px; overflow: hidden; }
+      .score-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+      .score-bar-val { font-size: 0.7rem; color: #8aba9a; width: 30px; text-align: right; font-weight: 700; }
+
+      .page-footer-row {
+        display: flex; justify-content: space-between; align-items: flex-end;
+        padding-top: 12px; border-top: 1px solid #1a3a22; margin-top: 10px;
+      }
+      .page-footer-row .pf-label { font-size: 0.55rem; color: #3a6a4a; text-transform: uppercase; letter-spacing: 1px; }
+      .page-footer-row .pf-value { font-size: 0.7rem; color: #6a9a7a; font-family: 'Courier New', monospace; }
+      .official-stamp {
+        width: 64px; height: 64px; border: 2px solid rgba(57,255,136,0.25); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; flex-direction: column;
+        transform: rotate(-12deg); opacity: 0.7;
+      }
+      .official-stamp .stamp-text { font-size: 0.45rem; color: #4a8a5a; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+      .official-stamp .stamp-score { font-size: 0.8rem; color: var(--green); font-weight: 900; }
+
+      /* MRZ Zone */
+      .mrz-zone {
+        background: #0a1510; border-top: 2px solid #1a3a22;
+        padding: 12px 24px; font-family: 'Courier New', monospace;
+        position: relative; z-index: 1;
+      }
+      .mrz-zone .mrz-title { font-size: 0.5rem; color: #3a6a4a; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+      .mrz-zone .mrz-line {
+        font-size: 0.72rem; color: #5a9a6a; letter-spacing: 2px; line-height: 1.6;
+        word-break: break-all; white-space: nowrap;
+      }
+
+      /* QR Code area */
+      .qr-section {
+        position: absolute; top: 16px; right: 20px; z-index: 2;
+      }
+      .qr-box {
+        width: 56px; height: 56px; border: 1px solid #2a5a3a; border-radius: 4px;
+        background: #0c1610; display: flex; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+      }
+      .qr-box canvas { width: 100%; height: 100%; }
+
+      /* Actions */
+      .passport-actions-row { text-align: center; padding: 10px 0 30px; }
+      .passport-actions-row a { margin: 0 8px; }
+
+      /* Print styles */
+      @media print {
+        body { background: white; }
+        .topbar, .passport-hero, .passport-actions-row, .site-footer { display: none; }
+        .passport-doc-wrap { padding: 0; gap: 20px; }
+        .passport-cover, .passport-page { box-shadow: none; border-color: #ccc; }
+      }
+
+      @media (max-width: 900px) {
+        .passport-doc-wrap { flex-direction: column; align-items: center; }
+        .passport-cover, .passport-page { width: 90vw; max-width: 380px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a class="active" href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+          <span class="nav-user" id="navUser"></span>
+        </div>
+      </nav>
+
+      <section class="passport-hero">
+        <p class="eyebrow">Official document</p>
+        <h1>Cyber Trust Passport</h1>
+        <p class="intro" style="margin:8px auto 0">International-standard trust credential with verified identity, integrity, and confidentiality ratings. Run a scan to generate your passport.</p>
+      </section>
+
+      <section class="passport-doc-wrap" id="passportWrap">
+        <!-- FRONT COVER -->
+        <div class="passport-cover" id="passportCover">
+          <div class="cover-emblem">
+            <div class="emblem-ring"><span class="tm-logo">TM</span></div>
+            <div class="cover-title">Cyber Trust</div>
+            <div class="cover-subtitle">Passport</div>
+            <div class="cover-org" id="coverOrg">---</div>
+            <div class="cover-id" id="coverId">TM-XXXX-XXXX-XXXX</div>
+          </div>
+          <div class="cover-hologram"></div>
+          <div class="cover-seal">TrustMesh International</div>
+        </div>
+
+        <!-- DATA PAGE -->
+        <div class="passport-page" id="passportPage">
+          <div class="page-header">
+            <span class="ph-title">TrustMesh Cyber Trust Passport</span>
+            <span class="ph-type">Type P - Organization</span>
+          </div>
+
+          <div class="qr-section">
+            <div class="qr-box"><canvas id="qrCanvas" width="56" height="56"></canvas></div>
+          </div>
+
+          <div class="page-body">
+            <div class="page-top-row">
+              <div class="org-photo">
+                <span class="photo-icon">&#9881;</span>
+              </div>
+              <div class="org-details">
+                <div class="detail-row"><span class="detail-label">Organization</span><span class="detail-value" id="detOrg">--</span></div>
+                <div class="detail-row"><span class="detail-label">Passport No.</span><span class="detail-value" id="detPassNo">TM-XXXX-XXXX</span></div>
+                <div class="detail-row"><span class="detail-label">Organization ID</span><span class="detail-value" id="detOrgId">TM-ORG-XXXXXXXX</span></div>
+                <div class="detail-row"><span class="detail-label">Issued</span><span class="detail-value" id="detIssued">--</span></div>
+                <div class="detail-row"><span class="detail-label">Expires</span><span class="detail-value" id="detExpires">--</span></div>
+                <div class="detail-row"><span class="detail-label">Authority</span><span class="detail-value">TrustMesh Intl.</span></div>
+              </div>
+            </div>
+
+            <div class="trust-score-section">
+              <div class="tss-label">Overall Trust Score</div>
+              <div class="trust-score-big" id="trustScoreBig">--</div>
+              <div class="tss-decision" id="trustDecision">---</div>
+              <div class="tss-max">out of 100</div>
+            </div>
+
+            <div class="security-badges">
+              <div class="sec-badge">
+                <div class="badge-icon">&#128274;</div>
+                <div class="badge-label">Confidentiality</div>
+                <div class="badge-status" id="badgeConf">--</div>
+              </div>
+              <div class="sec-badge">
+                <div class="badge-icon">&#9878;</div>
+                <div class="badge-label">Integrity</div>
+                <div class="badge-status" id="badgeInt">--</div>
+              </div>
+              <div class="sec-badge">
+                <div class="badge-icon">&#9889;</div>
+                <div class="badge-label">Availability</div>
+                <div class="badge-status" id="badgeAvail">--</div>
+              </div>
+            </div>
+
+            <div class="score-bars">
+              <div class="score-bar-row">
+                <span class="score-bar-label">Domain</span>
+                <div class="score-bar-track"><div class="score-bar-fill" id="barDomain" style="width:0%;background:var(--green)"></div></div>
+                <span class="score-bar-val" id="valDomain">--</span>
+              </div>
+              <div class="score-bar-row">
+                <span class="score-bar-label">Email</span>
+                <div class="score-bar-track"><div class="score-bar-fill" id="barEmail" style="width:0%;background:var(--green)"></div></div>
+                <span class="score-bar-val" id="valEmail">--</span>
+              </div>
+              <div class="score-bar-row">
+                <span class="score-bar-label">Exposure</span>
+                <div class="score-bar-track"><div class="score-bar-fill" id="barExposure" style="width:0%;background:var(--green)"></div></div>
+                <span class="score-bar-val" id="valExposure">--</span>
+              </div>
+              <div class="score-bar-row">
+                <span class="score-bar-label">Developer</span>
+                <div class="score-bar-track"><div class="score-bar-fill" id="barDeveloper" style="width:0%;background:var(--green)"></div></div>
+                <span class="score-bar-val" id="valDeveloper">--</span>
+              </div>
+            </div>
+
+            <div class="page-footer-row">
+              <div>
+                <div class="pf-label">Issuing Authority</div>
+                <div class="pf-value">TrustMesh International</div>
+                <div class="pf-label" style="margin-top:6px">Scan Method</div>
+                <div class="pf-value">Passive - No Intrusion</div>
+              </div>
+              <div class="official-stamp" id="officialStamp">
+                <span class="stamp-text">Verified</span>
+                <span class="stamp-score" id="stampScore">--</span>
+                <span class="stamp-text">Trust</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mrz-zone">
+            <div class="mrz-title">Machine Readable Zone</div>
+            <div class="mrz-line" id="mrzLine1">P&lt;TMTUSTMESH&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+            <div class="mrz-line" id="mrzLine2">TM00000000TMTMTMTMTMTMTMTM&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;00</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="passport-actions-row">
+        <a class="button-link" href="scanner.html">Generate new passport</a>
+        <button class="button-link secondary-link" onclick="window.print()">Print passport</button>
+      </div>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <div class="footer-links">
+            <a href="index.html">Dashboard</a>
+            <a href="scanner.html">Scanner</a>
+            <a href="contact.html">Contact</a>
+          </div>
+          <div class="footer-social">
+            <a href="https://github.com/SZ03-C" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://linkedin.com/in/shaguftha-zabeen" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="mailto:magic031827@gmail.com">Email</a>
+          </div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+          <p class="footer-legal">TrustMesh only performs safe, passive security checks.</p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+    (function() {
+      var user = JSON.parse(localStorage.getItem("tm_user") || "null");
+      var navUser = document.getElementById("navUser");
+      if (user && navUser) {
+        navUser.textContent = user.name || user.email;
+        if (user.role === "admin") navUser.textContent += " (admin)";
+        navUser.style.cursor = "pointer";
+        navUser.addEventListener("click", function() {
+          localStorage.removeItem("tm_token");
+          localStorage.removeItem("tm_user");
+          window.location.reload();
+        });
+      }
+
+      function genId(prefix, len) {
+        var chars = "0123456789ABCDEFHJKLMNPRSTUVWXYZ";
+        var id = prefix;
+        for (var i = 0; i < len; i++) id += chars[Math.floor(Math.random() * chars.length)];
+        return id;
+      }
+
+      function genPassportNo() {
+        return "TM-" + genId("", 4) + "-" + genId("", 4) + "-" + genId("", 4);
+      }
+      function genOrgId() {
+        return "TM-ORG-" + genId("", 8);
+      }
+
+      function formatDate(d) {
+        return d.getFullYear() + "-" +
+          String(d.getMonth()+1).padStart(2,"0") + "-" +
+          String(d.getDate()).padStart(2,"0");
+      }
+
+      function drawQR(domain) {
+        var canvas = document.getElementById("qrCanvas");
+        if (!canvas) return;
+        var ctx = canvas.getContext("2d");
+        var size = 56;
+        ctx.fillStyle = "#0c1610";
+        ctx.fillRect(0, 0, size, size);
+
+        var seed = 0;
+        for (var i = 0; i < domain.length; i++) seed = ((seed << 5) - seed + domain.charCodeAt(i)) | 0;
+
+        ctx.fillStyle = "#2a6a3a";
+        var cellSize = 4;
+        var pad = 2;
+        for (var r = 0; r < Math.floor((size - pad*2) / cellSize); r++) {
+          for (var c = 0; c < Math.floor((size - pad*2) / cellSize); c++) {
+            seed = ((seed * 1103515245 + 12345) & 0x7fffffff);
+            if (seed % 3 !== 0) {
+              ctx.fillRect(pad + c * cellSize, pad + r * cellSize, cellSize - 1, cellSize - 1);
+            }
+          }
+        }
+
+        ctx.fillStyle = "#3a8a4a";
+        ctx.fillRect(pad, pad, cellSize * 7, cellSize);
+        ctx.fillRect(pad, pad, cellSize, cellSize * 7);
+        ctx.fillRect(pad + cellSize * 6, pad, cellSize, cellSize * 7);
+        ctx.fillRect(pad, pad + cellSize * 6, cellSize * 7, cellSize);
+
+        var mid = Math.floor(size / 2 / cellSize);
+        ctx.fillRect(pad + mid * cellSize, pad + mid * cellSize, cellSize * 3, cellSize * 3);
+      }
+
+      function renderPassport(data) {
+        if (!data || !data.scores) return;
+
+        var passportNo = genPassportNo();
+        var orgId = genOrgId();
+        var now = new Date();
+        var expiry = new Date(now);
+        expiry.setFullYear(expiry.getFullYear() + 1);
+
+        var domain = data.domain || "unknown.org";
+        var score = data.scores.total || 0;
+        var decision = data.decision || {};
+        var decisionText = decision.status || "Unknown";
+
+        document.getElementById("coverOrg").textContent = domain.toUpperCase();
+        document.getElementById("coverId").textContent = passportNo;
+
+        document.getElementById("detOrg").textContent = domain;
+        document.getElementById("detPassNo").textContent = passportNo;
+        document.getElementById("detOrgId").textContent = orgId;
+        document.getElementById("detIssued").textContent = formatDate(now);
+        document.getElementById("detExpires").textContent = formatDate(expiry);
+
+        document.getElementById("trustScoreBig").textContent = score;
+        document.getElementById("trustDecision").textContent = decisionText;
+        document.getElementById("trustScoreBig").style.color =
+          score >= 82 ? "var(--green)" : score >= 68 ? "#e6a817" : "var(--red)";
+
+        var conf = Math.min(100, Math.round((data.scores.domain || 0) * 0.5 + (data.scores.email || 0) * 0.5));
+        var integrity = Math.min(100, Math.round((data.scores.developer || 0) * 0.6 + (data.scores.exposure || 0) * 0.4));
+        var avail = Math.min(100, Math.round((data.scores.domain || 0) * 0.4 + (data.scores.exposure || 0) * 0.6));
+
+        function setBadge(id, val) {
+          var el = document.getElementById(id);
+          if (val >= 80) { el.textContent = "VERIFIED"; el.className = "badge-status badge-pass"; }
+          else if (val >= 60) { el.textContent = "PARTIAL"; el.className = "badge-status badge-warn"; }
+          else { el.textContent = "WEAK"; el.className = "badge-status badge-fail"; }
+        }
+        setBadge("badgeConf", conf);
+        setBadge("badgeInt", integrity);
+        setBadge("badgeAvail", avail);
+
+        function setBar(barId, valId, val) {
+          document.getElementById(barId).style.width = val + "%";
+          document.getElementById(barId).style.background =
+            val >= 82 ? "var(--green)" : val >= 68 ? "#e6a817" : "var(--red)";
+          document.getElementById(valId).textContent = val;
+        }
+        setBar("barDomain", "valDomain", data.scores.domain || 0);
+        setBar("barEmail", "valEmail", data.scores.email || 0);
+        setBar("barExposure", "valExposure", data.scores.exposure || 0);
+        setBar("barDeveloper", "valDeveloper", data.scores.developer || 0);
+
+        document.getElementById("stampScore").textContent = score;
+
+        var mrz1 = "P<TMTUSTMESH<" + domain.replace(/[^A-Z0-9]/gi, "").substring(0, 30).toUpperCase();
+        while (mrz1.length < 44) mrz1 += "<";
+        var idNum = passportNo.replace(/-/g, "").substring(0, 9);
+        var mrz2 = idNum + "TMTMTMTMTMTMTM<" + String(score).padStart(3, "0") + "00";
+        while (mrz2.length < 44) mrz2 += "<";
+        document.getElementById("mrzLine1").textContent = mrz1;
+        document.getElementById("mrzLine2").textContent = mrz2;
+
+        drawQR(domain);
+      }
+
+      function loadPassportData() {
+        var hash = window.location.hash;
+        if (hash && hash.startsWith("#passport-")) {
+          var domain = hash.replace("#passport-", "");
+          var last = JSON.parse(localStorage.getItem("tm_lastScan") || "null");
+          if (last && last.domain === domain) return last;
+        }
+        var last = localStorage.getItem("tm_lastScan");
+        if (last) return JSON.parse(last);
+        return null;
+      }
+
+      var data = loadPassportData();
+      if (data && typeof renderPassportFromData === "function") {
+        renderPassport(data);
+        renderPassportFromData(data);
+      }
+    })();
+    </script>
+  </body>
+</html>

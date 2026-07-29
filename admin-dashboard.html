@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+      .admin-header h1 { margin: 0; font-size: 1.4rem; }
+      .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+      .admin-stat { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(16,24,32,0.82); text-align: center; }
+      .admin-stat strong { display: block; font-size: 1.8rem; }
+      .admin-stat span { font-size: 0.75rem; color: var(--muted); }
+      .stat-pending strong { color: #e6a817; }
+      .stat-approved strong { color: var(--green); }
+      .stat-denied strong { color: var(--red); }
+      .stat-total strong { color: var(--cyan); }
+
+      .section-label { font-size: 0.65rem; color: #4a7a5a; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-weight: 700; }
+
+      .req-card {
+        border: 1px solid var(--line); border-radius: 10px; background: rgba(16,24,32,0.82);
+        padding: 20px; margin-bottom: 12px; position: relative; overflow: hidden;
+        transition: border-color 0.2s;
+      }
+      .req-card:hover { border-color: rgba(57,255,136,0.2); }
+      .req-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+      .req-card.pending::before { background: #e6a817; }
+      .req-card.approved::before { background: var(--green); }
+      .req-card.denied::before { background: var(--red); }
+
+      .req-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+      .req-org { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+      .req-badge { font-size: 0.68rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+      .badge-pending { background: rgba(230,168,23,0.12); color: #e6a817; border: 1px solid rgba(230,168,23,0.25); }
+      .badge-approved { background: rgba(57,255,136,0.12); color: var(--green); border: 1px solid rgba(57,255,136,0.25); }
+      .badge-denied { background: rgba(255,68,102,0.12); color: var(--red); border: 1px solid rgba(255,68,102,0.25); }
+
+      .req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 12px; }
+      .req-field label { display: block; font-size: 0.62rem; color: #4a7a5a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+      .req-field span { font-size: 0.85rem; color: #b8d8c8; font-weight: 600; }
+
+      .req-msg { padding: 10px 14px; background: #071017; border-radius: 6px; border: 1px solid #1a2a22; margin-bottom: 14px; font-size: 0.85rem; color: var(--muted); line-height: 1.5; font-style: italic; }
+      .req-msg::before { content: '"'; color: #3a6a4a; }
+      .req-msg::after { content: '"'; color: #3a6a4a; }
+
+      .req-actions { display: flex; gap: 10px; }
+      .btn-approve { background: var(--green); color: #031008; font-weight: 800; border: 0; border-radius: 6px; padding: 10px 24px; cursor: pointer; font-size: 0.88rem; }
+      .btn-approve:hover { filter: brightness(1.08); }
+      .btn-deny { background: transparent; color: var(--red); font-weight: 700; border: 1px solid rgba(255,68,102,0.25); border-radius: 6px; padding: 10px 24px; cursor: pointer; font-size: 0.88rem; }
+      .btn-deny:hover { background: rgba(255,68,102,0.08); }
+
+      .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+      .empty-state h3 { color: var(--text); margin-bottom: 6px; }
+
+      @media (max-width: 600px) { .admin-stats { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a class="active" href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+          <span class="nav-user" id="navUser"></span>
+        </div>
+      </nav>
+
+      <div class="admin-header">
+        <div>
+          <p class="eyebrow">Admin panel</p>
+          <h1>Trust Request Management</h1>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a class="button-link secondary-link" href="index.html" style="text-decoration:none">Dashboard</a>
+          <button class="btn-deny" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+
+      <div class="admin-stats">
+        <div class="admin-stat stat-pending"><strong id="sPending">0</strong><span>Pending</span></div>
+        <div class="admin-stat stat-approved"><strong id="sApproved">0</strong><span>Approved</span></div>
+        <div class="admin-stat stat-denied"><strong id="sDenied">0</strong><span>Denied</span></div>
+        <div class="admin-stat stat-total"><strong id="sTotal">0</strong><span>Total</span></div>
+      </div>
+
+      <div id="requestsList"></div>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+    (function() {
+      var token = localStorage.getItem("tm_token");
+      var user = JSON.parse(localStorage.getItem("tm_user") || "null");
+      var navUser = document.getElementById("navUser");
+
+      if (!token || !user || user.role !== "admin") {
+        window.location.href = "admin.html";
+        return;
+      }
+
+      navUser.textContent = user.name || user.email + " (admin)";
+      navUser.style.cursor = "pointer";
+      navUser.addEventListener("click", function() {
+        localStorage.removeItem("tm_token");
+        localStorage.removeItem("tm_user");
+        window.location.href = "admin.html";
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", function() {
+        localStorage.removeItem("tm_token");
+        localStorage.removeItem("tm_user");
+        window.location.href = "admin.html";
+      });
+
+      loadRequests();
+
+      async function loadRequests() {
+        try {
+          var resp = await fetch("/api/admin/requests", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (resp.status === 401 || resp.status === 403) {
+            window.location.href = "admin.html";
+            return;
+          }
+          var data = await resp.json();
+          var reqs = data.requests || [];
+
+          var pending = reqs.filter(function(r) { return r.status === "pending"; });
+          var approved = reqs.filter(function(r) { return r.status === "approved"; });
+          var denied = reqs.filter(function(r) { return r.status === "denied"; });
+
+          document.getElementById("sPending").textContent = pending.length;
+          document.getElementById("sApproved").textContent = approved.length;
+          document.getElementById("sDenied").textContent = denied.length;
+          document.getElementById("sTotal").textContent = reqs.length;
+
+          var list = document.getElementById("requestsList");
+
+          if (reqs.length === 0) {
+            list.innerHTML = '<div class="empty-state"><h3>No trust requests yet</h3><p>When organizations submit trust requests, they will appear here for your review.</p></div>';
+            return;
+          }
+
+          var html = "";
+          if (pending.length > 0) {
+            html += '<div class="section-label">Pending review (' + pending.length + ')</div>';
+            pending.forEach(function(r) { html += card(r, true); });
+          }
+          if (approved.length > 0) {
+            html += '<div class="section-label" style="margin-top:24px">Approved (' + approved.length + ')</div>';
+            approved.forEach(function(r) { html += card(r, false); });
+          }
+          if (denied.length > 0) {
+            html += '<div class="section-label" style="margin-top:24px">Denied (' + denied.length + ')</div>';
+            denied.forEach(function(r) { html += card(r, false); });
+          }
+
+          list.innerHTML = html;
+
+          list.querySelectorAll("[data-approve]").forEach(function(btn) {
+            btn.addEventListener("click", function() { action(btn.dataset.approve, "approved"); });
+          });
+          list.querySelectorAll("[data-deny]").forEach(function(btn) {
+            btn.addEventListener("click", function() { action(btn.dataset.deny, "denied"); });
+          });
+        } catch (err) {
+          document.getElementById("requestsList").innerHTML = '<div class="empty-state"><h3>Connection failed</h3><p>Could not reach the server.</p></div>';
+        }
+      }
+
+      function card(r, showActions) {
+        var cls = r.status;
+        var badgeCls = "badge-" + r.status;
+        var statusText = r.status.charAt(0).toUpperCase() + r.status.slice(1);
+        var accessColors = { summary: "var(--cyan)", full: "var(--green)", evidence: "#e6a817" };
+
+        var h = '<div class="req-card ' + cls + '">';
+        h += '<div class="req-top"><span class="req-org">' + esc(r.org_name) + '</span><span class="req-badge ' + badgeCls + '">' + statusText + '</span></div>';
+        h += '<div class="req-grid">';
+        h += field("Email", esc(r.email));
+        h += field("Target Domain", esc(r.target_domain));
+        h += field("Access Level", '<span style="color:' + (accessColors[r.access_level] || "var(--text)") + '">' + esc(r.access_level) + '</span>');
+        h += field("Submitted", new Date(r.created_at).toLocaleString());
+        h += '</div>';
+        if (r.message) h += '<div class="req-msg">' + esc(r.message) + '</div>';
+        if (showActions) {
+          h += '<div class="req-actions">';
+          h += '<button class="btn-approve" data-approve="' + r.id + '">Approve</button>';
+          h += '<button class="btn-deny" data-deny="' + r.id + '">Deny</button>';
+          h += '</div>';
+        }
+        h += '</div>';
+        return h;
+      }
+
+      function field(label, value) {
+        return '<div class="req-field"><label>' + label + '</label><span>' + value + '</span></div>';
+      }
+
+      function esc(s) {
+        var d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+
+      async function action(id, status) {
+        try {
+          await fetch("/api/admin/requests/" + id, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ status: status })
+          });
+          loadRequests();
+        } catch (err) {}
+      }
+    })();
+    </script>
+  </body>
+</html>

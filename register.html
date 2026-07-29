@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh - Create Admin Account</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .auth-page { max-width: 400px; margin: 60px auto; padding: 0 20px; }
+      .auth-page h2 { margin-bottom: 4px; }
+      .auth-page .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 0.92rem; }
+      .auth-form { display: grid; gap: 14px; }
+      .auth-form input { width: 100%; border: 1px solid #28414d; border-radius: 8px; padding: 12px 16px; background: #071017; color: var(--text); outline: none; font-size: 0.92rem; font-family: inherit; }
+      .auth-form input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(57,255,136,0.12); }
+      .auth-form button { background: var(--green); color: #031008; font-weight: 800; border: 0; border-radius: 8px; min-height: 48px; cursor: pointer; font-size: 0.95rem; }
+      .auth-form button:hover { filter: brightness(1.08); }
+      .auth-msg { font-size: 0.88rem; margin: 0; }
+      .auth-msg.error { color: var(--red); }
+      .auth-note { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 10px 14px; background: rgba(57,255,136,0.04); border: 1px solid rgba(57,255,136,0.1); border-radius: 6px; }
+      .auth-link { text-align: center; margin-top: 20px; font-size: 0.88rem; color: var(--muted); }
+      .auth-link a { color: var(--green); text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </nav>
+
+      <div class="auth-page">
+        <p class="eyebrow">Admin access</p>
+        <h2>Create Admin Account</h2>
+        <p class="subtitle">Set up your admin account to manage trust requests.</p>
+        <form class="auth-form" id="signupForm">
+          <input type="text" name="name" placeholder="Full name" required>
+          <input type="email" name="email" placeholder="Email address" required>
+          <input type="password" name="password" placeholder="Password (min 6 characters)" required>
+          <div class="auth-note">The first account created becomes the admin. Additional accounts get regular user access.</div>
+          <button type="submit">Create account</button>
+          <p class="auth-msg error" id="signupError"></p>
+        </form>
+        <p class="auth-link">Already have an account? <a href="admin.html">Sign in</a></p>
+      </div>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+    (function() {
+      var user = JSON.parse(localStorage.getItem("tm_user") || "null");
+      if (user && user.role === "admin") {
+        window.location.href = "admin-dashboard.html";
+        return;
+      }
+
+      document.getElementById("signupForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        document.getElementById("signupError").textContent = "";
+        var fd = new FormData(e.target);
+        try {
+          var resp = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: fd.get("name"), email: fd.get("email"), password: fd.get("password") })
+          });
+          var data = await resp.json();
+          if (!resp.ok) { document.getElementById("signupError").textContent = data.error; return; }
+          localStorage.setItem("tm_token", data.token);
+          localStorage.setItem("tm_user", JSON.stringify(data.user));
+          window.location.href = "admin-dashboard.html";
+        } catch (err) {
+          document.getElementById("signupError").textContent = "Connection failed";
+        }
+      });
+    })();
+    </script>
+  </body>
+</html>

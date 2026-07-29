@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh Requests</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a class="active" href="requests.html">Trust requests</a>
+          <a href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </nav>
+
+      <section class="page-hero">
+        <p class="eyebrow">Org-to-org trust</p>
+        <h1>Control who can see your security passport.</h1>
+        <p class="intro">Organizations should not expose full evidence to everyone. TrustMesh lets teams request summary, full, or evidence-level access.</p>
+      </section>
+
+      <section class="request-layout">
+        <article class="feature-panel">
+          <div class="section-heading"><h2>Incoming Requests</h2><span id="requestCount">0 pending</span></div>
+          <div class="request-list" id="requestList">
+            <div class="empty-state">No trust requests yet. Scan a domain first to start building trust profiles.</div>
+          </div>
+        </article>
+
+        <article class="feature-panel">
+          <div class="section-heading"><h2>Access Levels</h2><span>policy model</span></div>
+          <div class="task-list">
+            <div><strong>Summary</strong><span>Score, decision, and top risks only</span></div>
+            <div><strong>Full</strong><span>Category scores, evidence summaries, remediation queue</span></div>
+            <div><strong>Evidence</strong><span>Technical evidence, raw scanner output, audit trail</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="requests">
+        <div>
+          <p class="eyebrow">Product truth</p>
+          <h3>This is where TrustMesh becomes more than a scanner.</h3>
+          <p>The value is not only generating a report. The value is letting two organizations safely exchange security trust before exchanging sensitive data.</p>
+        </div>
+        <div class="request-card">
+          <span>How it works</span>
+          <strong>Trust flow</strong>
+          <p>1. Scan an organization to generate their passport.</p>
+          <p>2. Share the passport link.</p>  
+          <p>3. The other org requests access level. </p>  
+          <p>4. You approve or deny based on their trust score.</p>
+          <div><a class="button-link" href="scanner.html">Create passport</a></div>
+        </div>
+      </section>
+
+      <section class="feature-panel" style="margin-top:18px">
+        <div class="section-heading"><h2>Submit a Trust Request</h2><span>org-to-org</span></div>
+        <form id="requestForm" class="request-submit-form">
+          <input type="text" name="orgName" placeholder="Your organization name" required>
+          <input type="email" name="email" placeholder="Contact email" required>
+          <input type="text" name="targetDomain" placeholder="Organization you want to trust (domain)" required>
+          <select name="accessLevel" required>
+            <option value="">Request access level...</option>
+            <option value="summary">Summary - Score, decision, top risks</option>
+            <option value="full">Full - Category scores, evidence summaries, remediation</option>
+            <option value="evidence">Evidence - Raw scanner output, audit trail</option>
+          </select>
+          <textarea name="message" placeholder="Why do you need access? (optional)"></textarea>
+          <button type="submit">Submit request</button>
+          <p class="form-status" id="formStatus"></p>
+        </form>
+      </section>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <div class="footer-links">
+            <a href="index.html">Dashboard</a>
+            <a href="scanner.html">Scanner</a>
+            <a href="contact.html">Contact</a>
+          </div>
+          <div class="footer-social">
+            <a href="https://github.com/SZ03-C" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://linkedin.com/in/shaguftha-zabeen" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="mailto:magic031827@gmail.com">Email</a>
+          </div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+          <p class="footer-legal">TrustMesh only performs safe, passive security checks.</p>
+        </div>
+      </footer>
+    </main>
+    <script>
+      (function() {
+        var form = document.getElementById('requestForm');
+        var status = document.getElementById('formStatus');
+
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          status.textContent = '';
+          status.className = 'form-status';
+          var fd = new FormData(form);
+          try {
+            var resp = await fetch('/api/requests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orgName: fd.get('orgName'),
+                email: fd.get('email'),
+                targetDomain: fd.get('targetDomain'),
+                accessLevel: fd.get('accessLevel'),
+                message: fd.get('message')
+              })
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+              status.textContent = data.error || 'Failed to submit';
+              status.classList.add('error');
+              return;
+            }
+            status.textContent = 'Request submitted for ' + fd.get('targetDomain') + '!';
+            status.classList.add('success');
+            form.reset();
+            loadRequests();
+          } catch (err) {
+            status.textContent = 'Connection failed';
+            status.classList.add('error');
+          }
+        });
+
+        loadRequests();
+
+        async function loadRequests() {
+          try {
+            var resp = await fetch('/api/requests');
+            var data = await resp.json();
+            var list = document.getElementById('requestList');
+            var count = document.getElementById('requestCount');
+
+            if (!data.requests || data.requests.length === 0) {
+              list.innerHTML = '<div class="empty-state">No trust requests yet. Submit one above or scan a domain first.</div>';
+              count.textContent = '0 pending';
+              return;
+            }
+
+            count.textContent = data.requests.length + ' total';
+            list.innerHTML = data.requests.map(function(r) {
+              var statusClass = r.status === 'pending' ? 'restricted' : r.status === 'approved' ? 'verified' : 'high-risk';
+              return '<div class="recent-item"><div><strong>' + r.org_name + '</strong><span style="color:var(--muted);margin-left:8px">' + r.email + '</span></div><div><span class="recent-decision ' + statusClass + '">' + r.status + '</span><span class="recent-score">' + r.access_level + ' access</span></div><div><strong>Target:</strong> ' + r.target_domain + '</div>' + (r.message ? '<div><small>' + r.message + '</small></div>' : '') + '<div><small>' + new Date(r.created_at).toLocaleString() + '</small></div></div>';
+            }).join('');
+          } catch (err) {}
+        }
+      })();
+    </script>
+  </body>
+</html>

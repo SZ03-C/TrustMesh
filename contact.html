@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh - AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .ai-hero { text-align: center; padding: 24px 0 0; }
+      .ai-hero h1 { font-size: 1.5rem; }
+      .ai-hero .intro { max-width: 480px; margin: 6px auto 0; }
+
+      .chat-container { max-width: 800px; margin: 0 auto; padding: 0 0 20px; }
+
+      .chat-window {
+        border: 1px solid var(--line); border-radius: 14px; background: rgba(11,16,22,0.85);
+        overflow: hidden; display: flex; flex-direction: column; min-height: 520px; max-height: 70vh;
+      }
+
+      .chat-header {
+        display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+        border-bottom: 1px solid var(--line); background: rgba(7,12,17,0.6);
+      }
+      .chat-header .ch-avatar { width: 32px; height: 32px; border-radius: 8px; background: rgba(57,255,136,0.12); border: 1px solid rgba(57,255,136,0.25); display: grid; place-items: center; font-size: 0.72rem; font-weight: 800; color: var(--green); }
+      .chat-header .ch-info { flex: 1; }
+      .chat-header .ch-info strong { display: block; font-size: 0.88rem; }
+      .chat-header .ch-info small { color: var(--muted); font-size: 0.75rem; }
+      .chat-header .ch-status { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+      .chat-messages {
+        flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px;
+        scroll-behavior: smooth;
+      }
+      .chat-messages::-webkit-scrollbar { width: 5px; }
+      .chat-messages::-webkit-scrollbar-track { background: transparent; }
+      .chat-messages::-webkit-scrollbar-thumb { background: #28414d; border-radius: 3px; }
+
+      .msg { display: flex; gap: 12px; align-items: flex-start; max-width: 92%; animation: msgIn 0.3s ease; }
+      @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+      .msg-avatar {
+        width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+        font-size: 0.68rem; font-weight: 800; flex-shrink: 0;
+      }
+      .msg.bot .msg-avatar { background: rgba(57,255,136,0.1); border: 1px solid rgba(57,255,136,0.2); color: var(--green); }
+      .msg.user .msg-avatar { background: rgba(56,216,255,0.1); border: 1px solid rgba(56,216,255,0.2); color: var(--cyan); }
+
+      .msg-bubble {
+        padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; line-height: 1.65;
+        border: 1px solid transparent;
+      }
+      .msg.bot .msg-bubble { background: #0e1820; border-color: #1a2830; color: #c8d8d0; }
+      .msg.user .msg-bubble { background: rgba(56,216,255,0.08); border-color: rgba(56,216,255,0.15); color: var(--text); }
+      .msg-bubble p { margin: 0 0 8px; }
+      .msg-bubble p:last-child { margin-bottom: 0; }
+      .msg-bubble strong { color: var(--green); }
+      .msg-bubble code { background: rgba(57,255,136,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: var(--green); font-family: "Cascadia Code", Consolas, monospace; }
+      .msg-time { font-size: 0.68rem; color: #3a5a4a; margin-top: 4px; }
+
+      .typing-indicator { display: flex; gap: 4px; padding: 4px 0; }
+      .typing-indicator span { width: 6px; height: 6px; border-radius: 50%; background: #3a6a4a; animation: typingDot 1.2s infinite; }
+      .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+      .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes typingDot { 0%,60%,100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+      .suggestions { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: rgba(7,12,17,0.4); }
+      .sug-btn {
+        padding: 7px 14px; border: 1px solid #1e3040; border-radius: 20px; background: transparent;
+        color: var(--muted); font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
+      }
+      .sug-btn:hover { border-color: var(--green); color: var(--green); background: rgba(57,255,136,0.04); }
+
+      .chat-input-area {
+        display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line);
+        background: rgba(7,12,17,0.5);
+      }
+      .chat-input-area input {
+        flex: 1; border: 1px solid #1e3040; border-radius: 10px; padding: 12px 16px;
+        background: #0a1218; color: var(--text); outline: none; font-size: 0.9rem;
+      }
+      .chat-input-area input:focus { border-color: var(--green); }
+      .chat-input-area input::placeholder { color: #3a5a4a; }
+      .chat-send {
+        width: 44px; height: 44px; border-radius: 10px; border: 0; background: var(--green);
+        color: #031008; font-size: 1.1rem; cursor: pointer; display: grid; place-items: center;
+        transition: filter 0.2s;
+      }
+      .chat-send:hover { filter: brightness(1.1); }
+      .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      .contact-alt { margin-top: 20px; }
+      .faq-section { margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a href="admin.html">Admin</a>
+          <a class="active" href="contact.html">Contact</a>
+          <span class="nav-user" id="navUser"></span>
+        </div>
+      </nav>
+
+      <section class="ai-hero">
+        <p class="eyebrow">AI-powered</p>
+        <h1>TrustMesh Assistant</h1>
+        <p class="intro">Ask about cybersecurity trust, scan results, security headers, DMARC, or how TrustMesh works.</p>
+      </section>
+
+      <div class="chat-container">
+        <div class="chat-window">
+          <div class="chat-header">
+            <div class="ch-avatar">TM</div>
+            <div class="ch-info">
+              <strong>TrustMesh AI</strong>
+              <small>Cybersecurity trust assistant</small>
+            </div>
+            <span class="ch-status"></span>
+          </div>
+
+          <div class="chat-messages" id="chatMessages">
+            <div class="msg bot">
+              <div class="msg-avatar">AI</div>
+              <div>
+                <div class="msg-bubble">
+                  <p>Hi! I'm the TrustMesh AI assistant. I can help you with:</p>
+                  <p>&bull; <strong>Trust scores</strong> &mdash; how they're calculated and what they mean<br>
+                  &bull; <strong>Security headers</strong> &mdash; HSTS, CSP, X-Frame-Options<br>
+                  &bull; <strong>DMARC & email auth</strong> &mdash; SPF, DKIM, DMARC policies<br>
+                  &bull; <strong>HTTPS & certificates</strong> &mdash; TLS, HSTS, cert checks<br>
+                  &bull; <strong>GitHub scanning</strong> &mdash; repo hygiene, SECURITY.md<br>
+                  &bull; <strong>Passports & requests</strong> &mdash; how the trust flow works</p>
+                  <p>What would you like to know?</p>
+                </div>
+                <div class="msg-time">Just now</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="suggestions" id="suggestions">
+            <button class="sug-btn" data-q="How is the trust score calculated?">How is trust score calculated?</button>
+            <button class="sug-btn" data-q="What security headers does TrustMesh check?">Security headers checked</button>
+            <button class="sug-btn" data-q="Explain DMARC and why it matters">Explain DMARC</button>
+            <button class="sug-btn" data-q="What is a Cyber Trust Passport?">What is a passport?</button>
+            <button class="sug-btn" data-q="How do trust requests work?">Trust request flow</button>
+          </div>
+
+          <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask about trust scores, headers, DMARC..." autocomplete="off">
+            <button class="chat-send" id="chatSend" title="Send">&#10148;</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="feature-panel contact-alt">
+        <div class="email-alt">
+          <div>
+            <p class="eyebrow">Need more help?</p>
+            <h3>Contact us directly</h3>
+            <p style="color:var(--muted)">For partnerships, bug reports, or detailed technical questions.</p>
+          </div>
+          <a class="button-link" href="mailto:magic031827@gmail.com?subject=TrustMesh%20Inquiry">Email magic031827@gmail.com</a>
+        </div>
+      </section>
+
+      <section class="feature-panel faq-section">
+        <p class="eyebrow">Common questions</p>
+        <h2>FAQ</h2>
+        <div class="faq-list">
+          <div class="faq-item">
+            <strong>What is a Cyber Trust Passport?</strong>
+            <span>A scored security assessment (0-100) evaluating domain security, email auth, exposure, and developer hygiene. It includes security badges, ID numbers, and a collaboration decision.</span>
+          </div>
+          <div class="faq-item">
+            <strong>Is TrustMesh a vulnerability scanner?</strong>
+            <span>No. TrustMesh performs only safe, passive checks: HTTPS verification, security header inspection, DNS lookups, and GitHub public metadata analysis.</span>
+          </div>
+          <div class="faq-item">
+            <strong>How do I interpret the trust score?</strong>
+            <span>82+ = Safe to collaborate. 68-81 = Restricted (limited sharing). Below 68 = High Risk (fix issues before sharing sensitive data).</span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <div class="footer-links">
+            <a href="index.html">Dashboard</a>
+            <a href="scanner.html">Scanner</a>
+            <a href="contact.html">Contact</a>
+          </div>
+          <div class="footer-social">
+            <a href="https://github.com/SZ03-C" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://linkedin.com/in/shaguftha-zabeen" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="mailto:magic031827@gmail.com">Email</a>
+          </div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+    (function() {
+      var user = JSON.parse(localStorage.getItem("tm_user") || "null");
+      var navUser = document.getElementById("navUser");
+      if (user && navUser) {
+        navUser.textContent = user.name || user.email;
+        if (user.role === "admin") navUser.textContent += " (admin)";
+        navUser.style.cursor = "pointer";
+        navUser.addEventListener("click", function() {
+          localStorage.removeItem("tm_token");
+          localStorage.removeItem("tm_user");
+          window.location.reload();
+        });
+      }
+
+      var knowledge = [
+        { keys: ["trust score", "score", "how calculated", "calculation", "weighted"], answer: "The Trust Score is calculated as a weighted average of 4 categories:\n\n<strong>Domain Trust (30%)</strong> &mdash; HTTPS validity, HSTS, security headers (CSP, X-Frame-Options, X-Content-Type-Options), DNS configuration.\n\n<strong>Email Trust (20%)</strong> &mdash; SPF record presence, DMARC policy strength, DKIM configuration.\n\n<strong>Public Exposure (25%)</strong> &mdash; Attack surface analysis, exposed services, information leakage.\n\n<strong>Developer Trust (25%)</strong> &mdash; GitHub organization hygiene, SECURITY.md presence, repo count, exposed configs.\n\nEach category is scored 0-100, then combined using the weights above." },
+        { keys: ["dmarc", "email auth", "spf", "dkim", "email security"], answer: "<strong>DMARC</strong> (Domain-based Message Authentication, Reporting & Conformance) protects against email spoofing and phishing.\n\n<strong>SPF</strong> (Sender Policy Framework) lists which servers can send email for your domain.\n<strong>DKIM</strong> (DomainKeys Identified Mail) adds a cryptographic signature to verify email authenticity.\n<strong>DMARC</strong> tells receivers what to do if SPF/DKIM fail.\n\n<strong>Best practice:</strong> Start with <code>p=none</code> to monitor, then move to <code>p=quarantine</code>, and finally <code>p=reject</code> once you're confident legitimate email is authenticated." },
+        { keys: ["security header", "header", "hsts", "csp", "x-frame", "x-content"], answer: "TrustMesh checks these security headers:\n\n<strong>HSTS</strong> (HTTP Strict Transport Security) &mdash; Forces HTTPS. Without it, users can be downgraded to HTTP.\n<strong>CSP</strong> (Content Security Policy) &mdash; Prevents XSS attacks by controlling which scripts can run.\n<strong>X-Frame-Options</strong> &mdash; Prevents clickjacking by blocking iframe embedding.\n<strong>X-Content-Type-Options</strong> &mdash; Prevents MIME type sniffing attacks.\n<strong>Referrer-Policy</strong> &mdash; Controls how much referrer info is shared.\n<strong>Permissions-Policy</strong> &mdash; Controls browser feature access (camera, mic, etc.).\n\nMissing headers reduce your trust score significantly." },
+        { keys: ["https", "ssl", "tls", "certificate", "encrypt"], answer: "<strong>HTTPS</strong> encrypts all data between the browser and server. Without it, data is transmitted in plain text.\n\nTrustMesh checks:\n&bull; Is HTTPS enabled?\n&bull; Is the certificate valid and not expired?\n&bull; Is HSTS configured to prevent downgrade attacks?\n&bull; Are there mixed content issues (HTTP resources on HTTPS pages)?\n\n<strong>Impact:</strong> Missing HTTPS is a high-severity finding. It drops your Domain Trust score significantly and flags as a critical risk in the passport." },
+        { keys: ["github", "repo", "developer", "code"], answer: "TrustMesh scans your GitHub organization for:\n\n<strong>Public repos</strong> &mdash; Too many public repos increase exposure risk.\n<strong>SECURITY.md</strong> &mdash; Having one shows responsible disclosure policy.\n<strong>Exposed configs</strong> &mdash; .env files, API keys, or credentials in public repos.\n<strong>Organization setup</strong> &mdash; Two-factor enforcement, member permissions.\n\n<strong>Tip:</strong> Enable branch protection, require PR reviews, and add a SECURITY.md to improve your Developer Trust score." },
+        { keys: ["passport", "trust passport", "cyber trust"], answer: "A <strong>Cyber Trust Passport</strong> is a formal trust credential generated after scanning an organization. It includes:\n\n&bull; <strong>Passport number</strong> (TM-XXXX-XXXX-XXXX) and <strong>Organization ID</strong> (TM-ORG-XXXXXXXX)\n&bull; <strong>Trust score</strong> (0-100) with category breakdowns\n&bull; <strong>Security badges</strong> &mdash; Confidentiality, Integrity, Availability ratings\n&bull; <strong>Collaboration decision</strong> &mdash; Safe / Restricted / High Risk\n&bull; <strong>Machine Readable Zone (MRZ)</strong> like international passports\n&bull; <strong>QR code</strong> for verification\n&bull; <strong>Issue & expiry dates</strong> (valid for 1 year)\n\nShare the passport with partners to prove your security posture." },
+        { keys: ["request", "trust request", "access level", "approve", "deny"], answer: "Trust requests let organizations ask to see your security passport at different access levels:\n\n<strong>Summary</strong> &mdash; Score, decision, and top risks only.\n<strong>Full</strong> &mdash; Category scores, evidence summaries, remediation queue.\n<strong>Evidence</strong> &mdash; Raw scanner output, technical evidence, audit trail.\n\n<strong>Flow:</strong>\n1. Organization submits a request on the Trust Requests page.\n2. Admin reviews the request in the Admin Panel.\n3. Admin approves or denies based on the requesting org's legitimacy.\n4. Approved orgs get access to the agreed level of passport data." },
+        { keys: ["safe", "collaborate", "sharing", "decision"], answer: "The collaboration decision is based on your trust score:\n\n<strong>82-100 = Safe</strong> &mdash; Full collaboration approved. You can share data, APIs, and access freely.\n<strong>68-81 = Restricted</strong> &mdash; Limited sharing only. Share non-sensitive data. Require remediation for sensitive access.\n<strong>0-67 = High Risk</strong> &mdash; No sensitive data sharing. The organization needs to fix critical security issues first.\n\nThe decision is automatically generated but admins can override it." },
+        { keys: ["admin", "role", "first user"], answer: "The first user to sign up on TrustMesh automatically becomes the <strong>admin</strong>. Admins can:\n\n&bull; Approve or deny trust requests\n&bull; View all scanned organizations\n&bull; Manage users\n&bull; See full passport details with evidence and remediation\n\nRegular users can scan domains and view results but cannot manage trust requests." },
+        { keys: ["risk", "vulnerability", "finding", "severity"], answer: "Risks are ranked by collaboration impact:\n\n<strong>High severity</strong> &mdash; Missing HSTS, no CSP, no HTTPS, exposed credentials. These require immediate fixes.\n<strong>Medium severity</strong> &mdash; Missing X-Frame-Options, weak DMARC policy, no SECURITY.md. Should be addressed soon.\n<strong>Low severity</strong> &mdash; Missing Referrer-Policy, minor config issues. Informational but good to fix.\n\nEach risk in the passport includes a description, severity level, and color-coded indicator." },
+        { keys: ["remediation", "fix", "improve", "next step"], answer: "Remediation steps are prioritized actions to improve your trust score:\n\n<strong>High priority:</strong> Enable HSTS, add CSP header, enforce DMARC p=reject, enable HTTPS everywhere.\n<strong>Medium priority:</strong> Add X-Frame-Options, create SECURITY.md, configure DKIM, enable 2FA on GitHub.\n<strong>Low priority:</strong> Add Referrer-Policy, set Permissions-Policy, review exposed services.\n\nStart with high priority items for the biggest score improvement." },
+        { keys: ["hello", "hi", "hey", "good morning", "good evening"], answer: "Hello! I'm here to help with anything related to cybersecurity trust, TrustMesh features, or scan results.\n\nTry asking about trust scores, security headers, DMARC policies, passports, or how the trust request flow works." },
+        { keys: ["help", "what can you", "options", "commands"], answer: "I can help with:\n\n&bull; <strong>Trust scores</strong> &mdash; How they're calculated, what affects them\n&bull; <strong>Security headers</strong> &mdash; HSTS, CSP, X-Frame-Options and why they matter\n&bull; <strong>Email security</strong> &mdash; DMARC, SPF, DKIM configuration\n&bull; <strong>HTTPS & TLS</strong> &mdash; Certificate checks, encryption\n&bull; <strong>GitHub scanning</strong> &mdash; Developer hygiene, repo security\n&bull; <strong>Passports</strong> &mdash; How they work, what's included\n&bull; <strong>Trust requests</strong> &mdash; Submitting, approving, access levels\n&bull; <strong>Admin panel</strong> &mdash; Managing requests, user roles\n\nJust type your question!" },
+        { keys: ["thank", "thanks", "awesome", "great", "perfect"], answer: "You're welcome! If you have any other questions about TrustMesh or cybersecurity trust, feel free to ask. I'm here to help!" }
+      ];
+
+      var chatMessages = document.getElementById("chatMessages");
+      var chatInput = document.getElementById("chatInput");
+      var chatSend = document.getElementById("chatSend");
+      var suggestions = document.getElementById("suggestions");
+
+      function getResponse(input) {
+        var lower = input.toLowerCase();
+        for (var i = 0; i < knowledge.length; i++) {
+          for (var j = 0; j < knowledge[i].keys.length; j++) {
+            if (lower.includes(knowledge[i].keys[j])) return knowledge[i].answer;
+          }
+        }
+        if (lower.includes("what") || lower.includes("how") || lower.includes("why") || lower.includes("can")) {
+          return "That's a great question! I can help with trust scores, security headers, DMARC/email auth, HTTPS, GitHub scanning, passports, trust requests, and remediation steps. Could you try rephrasing your question using one of these topics?";
+        }
+        return "I'm not sure I understand that. I can help with:\n\n&bull; Trust scores and how they're calculated\n&bull; Security headers (HSTS, CSP, etc.)\n&bull; DMARC, SPF, DKIM email authentication\n&bull; HTTPS and certificate checks\n&bull; GitHub organization scanning\n&bull; Cyber Trust Passports\n&bull; Trust request flow\n\nTry asking about one of these topics!";
+      }
+
+      function timeStr() {
+        var d = new Date();
+        return d.getHours().toString().padStart(2,"0") + ":" + d.getMinutes().toString().padStart(2,"0");
+      }
+
+      function addMessage(text, isUser) {
+        var msg = document.createElement("div");
+        msg.className = "msg " + (isUser ? "user" : "bot");
+
+        var avatar = document.createElement("div");
+        avatar.className = "msg-avatar";
+        avatar.textContent = isUser ? "You" : "AI";
+
+        var body = document.createElement("div");
+
+        var bubble = document.createElement("div");
+        bubble.className = "msg-bubble";
+        if (isUser) {
+          bubble.textContent = text;
+        } else {
+          bubble.innerHTML = text.replace(/\n/g, "<br>");
+        }
+
+        var time = document.createElement("div");
+        time.className = "msg-time";
+        time.textContent = timeStr();
+
+        body.appendChild(bubble);
+        body.appendChild(time);
+        msg.appendChild(avatar);
+        msg.appendChild(body);
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function showTyping() {
+        var msg = document.createElement("div");
+        msg.className = "msg bot";
+        msg.id = "typingMsg";
+        msg.innerHTML = '<div class="msg-avatar">AI</div><div><div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>';
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function removeTyping() {
+        var el = document.getElementById("typingMsg");
+        if (el) el.remove();
+      }
+
+      function handleSend() {
+        var text = chatInput.value.trim();
+        if (!text) return;
+        chatInput.value = "";
+        chatSend.disabled = true;
+        suggestions.style.display = "none";
+
+        addMessage(text, true);
+        showTyping();
+
+        var delay = 600 + Math.random() * 800;
+        setTimeout(function() {
+          removeTyping();
+          addMessage(getResponse(text), false);
+          chatSend.disabled = false;
+          chatInput.focus();
+        }, delay);
+      }
+
+      chatSend.addEventListener("click", handleSend);
+      chatInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") { e.preventDefault(); handleSend(); }
+      });
+
+      suggestions.querySelectorAll(".sug-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          chatInput.value = btn.dataset.q;
+          handleSend();
+        });
+      });
+
+      chatInput.focus();
+    })();
+    </script>
+  </body>
+</html>

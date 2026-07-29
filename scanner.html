@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a class="active" href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+          <span class="nav-user" id="navUser"></span>
+        </div>
+      </nav>
+
+      <section class="page-hero">
+        <p class="eyebrow">Passport generator</p>
+        <h1>Generate a Cyber Trust Passport.</h1>
+        <p class="intro">Enter an organization domain. TrustMesh performs real HTTPS checks, security header analysis, DNS verification, and GitHub org scanning.</p>
+      </section>
+
+      <section class="scan-stage" id="scanner" aria-live="polite">
+        <div class="terminal">
+          <div class="terminal-bar"><span></span><span></span><span></span><strong>passport-runner</strong></div>
+          <div class="scanner-shell">
+            <form class="scan-form scanner-form" id="scanForm">
+              <label for="domainInput">Organization domain</label>
+              <div class="input-row">
+                <input id="domainInput" name="domain" type="text" placeholder="example.com" autocomplete="off" required>
+                <button type="submit">Run passport</button>
+              </div>
+              <p class="microcopy">Live scan: HTTPS, security headers, DNS, GitHub API checks.</p>
+            </form>
+            <div class="terminal-layout">
+              <div class="terminal-body" id="terminalBody"><p>waiting for domain input...</p></div>
+              <div class="module-stack" id="moduleStack">
+                <div data-module="Domain">Domain<span>idle</span></div>
+                <div data-module="Email">Email<span>idle</span></div>
+                <div data-module="Exposure">Exposure<span>idle</span></div>
+                <div data-module="Developer">Developer<span>idle</span></div>
+                <div data-module="Decision">Decision<span>idle</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PUBLIC passport: score + decision only -->
+      <section class="passport hidden" id="passport">
+        <header class="passport-header">
+          <div>
+            <p class="eyebrow">Cyber Trust Passport</p>
+            <h2 id="passportDomain">--</h2>
+            <p id="passportDecision">Run a scan to see results</p>
+            <div class="passport-tags" id="passportTags"></div>
+          </div>
+          <div class="score-ring" id="scoreRing" style="--score-deg:0deg"><div class="score-ring-inner"><span id="scoreValue">--</span><small>trust score</small></div></div>
+        </header>
+
+        <!-- Admin-only: full details -->
+        <div id="adminDetails" style="display:none">
+          <div class="metrics">
+            <article><span>Domain Trust</span><strong id="domainScore">--</strong><small>identity verified</small></article>
+            <article><span>Email Trust</span><strong id="emailScore">--</strong><small>spoofing review</small></article>
+            <article><span>Public Exposure</span><strong id="exposureScore">--</strong><small>passive signals</small></article>
+            <article><span>Developer Trust</span><strong id="developerScore">--</strong><small>repo hygiene</small></article>
+          </div>
+          <div class="content-grid">
+            <section class="risk-board">
+              <div class="section-heading"><h3>Top Risks</h3><span>ranked by impact</span></div>
+              <div id="riskList" class="risk-list"></div>
+            </section>
+            <section class="decision-card">
+              <div class="section-heading"><h3>Sharing Decision</h3><span>policy output</span></div>
+              <div class="decision-status" id="decisionStatus">Restricted</div>
+              <p id="decisionText"></p>
+              <div class="policy-list" id="policyList"></div>
+            </section>
+          </div>
+          <div class="deep-grid">
+            <section class="timeline">
+              <div class="section-heading"><h3>Evidence Timeline</h3><span>scanner results</span></div>
+              <div id="timelineList" class="timeline-list"></div>
+            </section>
+            <section class="remediation">
+              <div class="section-heading"><h3>Remediation Queue</h3><span>next steps</span></div>
+              <div id="remediationList" class="remediation-list"></div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Login prompt for non-admins -->
+        <div class="login-prompt" id="loginPrompt">
+          <div class="prompt-box">
+            <p class="eyebrow">Full details require admin access</p>
+            <h3>Want to see the full passport?</h3>
+            <p>Category scores, risks, vulnerabilities, and remediation steps are only visible to authenticated admins. Login to access the full trust passport.</p>
+            <div class="prompt-actions">
+              <a class="button-link" href="index.html">Login / Sign up</a>
+              <button type="button" class="secondary-btn" id="copyLink">Copy score link</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="passport-actions">
+          <button type="button" id="scanAnother" class="secondary-btn">Scan another domain</button>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

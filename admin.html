@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustMesh - Admin Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .auth-page { max-width: 400px; margin: 80px auto; padding: 0 20px; }
+      .auth-page h2 { margin-bottom: 4px; }
+      .auth-page .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 0.92rem; line-height: 1.6; }
+      .auth-form { display: grid; gap: 14px; }
+      .auth-form input { width: 100%; border: 1px solid #28414d; border-radius: 8px; padding: 12px 16px; background: #071017; color: var(--text); outline: none; font-size: 0.92rem; font-family: inherit; }
+      .auth-form input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(57,255,136,0.12); }
+      .auth-form button { background: var(--green); color: #031008; font-weight: 800; border: 0; border-radius: 8px; min-height: 48px; cursor: pointer; font-size: 0.95rem; }
+      .auth-form button:hover { filter: brightness(1.08); }
+      .auth-msg { font-size: 0.88rem; margin: 0; }
+      .auth-msg.error { color: var(--red); }
+      .auth-link { text-align: center; margin-top: 20px; font-size: 0.88rem; color: var(--muted); }
+      .auth-link a { color: var(--green); text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="TrustMesh home"><span class="brand-mark">TM</span><span>TrustMesh</span></a>
+        <div class="nav-actions">
+          <a href="index.html">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="passport.html">Passport</a>
+          <a href="requests.html">Trust requests</a>
+          <a class="active" href="admin.html">Admin</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </nav>
+
+      <div class="auth-page">
+        <p class="eyebrow">Admin access</p>
+        <h2>Sign in to Admin Panel</h2>
+        <p class="subtitle">Review and approve trust requests from other organizations.</p>
+        <form class="auth-form" id="loginForm">
+          <input type="email" name="email" placeholder="Email address" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Sign in</button>
+          <p class="auth-msg error" id="loginError"></p>
+        </form>
+        <p class="auth-link">Don't have an account? <a href="register.html">Create one</a></p>
+        <p class="auth-link" style="margin-top:8px"><a href="scanner.html">Or scan without login</a></p>
+      </div>
+
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand"><span class="brand-mark">TM</span><span>TrustMesh</span></div>
+          <p class="copyright">&copy; 2026 TrustMesh by Shaguftha Zabeen. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+    (function() {
+      var user = JSON.parse(localStorage.getItem("tm_user") || "null");
+      if (user && user.role === "admin") {
+        window.location.href = "admin-dashboard.html";
+        return;
+      }
+
+      document.getElementById("loginForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        document.getElementById("loginError").textContent = "";
+        var fd = new FormData(e.target);
+        try {
+          var resp = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: fd.get("email"), password: fd.get("password") })
+          });
+          var data = await resp.json();
+          if (!resp.ok) {
+            document.getElementById("loginError").textContent = data.error || "Login failed";
+            return;
+          }
+          localStorage.setItem("tm_token", data.token);
+          localStorage.setItem("tm_user", JSON.stringify(data.user));
+          if (data.user.role === "admin") {
+            window.location.href = "admin-dashboard.html";
+          } else {
+            document.getElementById("loginError").textContent = "Signed in, but this account is not an admin. Admin access required for the admin panel.";
+          }
+        } catch (err) {
+          document.getElementById("loginError").textContent = "Connection failed";
+        }
+      });
+    })();
+    </script>
+  </body>
+</html>
