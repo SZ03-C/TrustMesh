@@ -280,9 +280,9 @@ button:hover { filter: brightness(1.08); }
 .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; }
 .footer-links a { color: var(--muted); font-size: 0.9rem; }
 .footer-links a:hover { color: var(--green); }
-.footer-social { display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; }
-.footer-social a { color: var(--cyan); font-size: 0.88rem; font-weight: 600; }
-.footer-social a:hover { color: var(--green); text-decoration: underline; }
+.footer-social { display: flex; justify-content: center; gap: 16px; margin-bottom: 16px; }
+.footer-social a { color: var(--cyan); display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid transparent; transition: all 0.2s; }
+.footer-social a:hover { color: var(--green); border-color: rgba(57,255,136,0.25); background: rgba(57,255,136,0.06); }
 .copyright { color: var(--muted); font-size: 0.84rem; margin: 0 0 6px; }
 .footer-legal { color: #688077; font-size: 0.78rem; margin: 0; }
 
